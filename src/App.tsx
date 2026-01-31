@@ -1,6 +1,3 @@
-//TODO: vite build data
-//TODO: tauri build data
-
 import { lazy, Suspense, useCallback, useState } from "react";
 import { useCanvasState } from "./context/canvas.context";
 import Overlay from "./components/shared/overlay.component";
@@ -238,7 +235,7 @@ function App() {
             </Button>
           )}
           <Button
-            className="w-16 h-16"
+            className="w-16 h-16 bg-green-500/20 border-green-500 hover:bg-green-500/60"
             disabled={!image || (!textMode && !dotMode)}
             onClick={() => {
               setTextMode(false);
@@ -249,7 +246,7 @@ function App() {
             <LassoSelect className="size-10" />
           </Button>
           <Button
-            className="w-16 h-16"
+            className="w-16 h-16 bg-green-500/20 border-green-500 hover:bg-green-500/60"
             disabled={!image || textMode}
             onClick={() => {
               setTextMode(true);
@@ -260,7 +257,7 @@ function App() {
             <Type className="size-10" />
           </Button>
           <Button
-            className="w-16 h-16"
+            className="w-16 h-16 bg-green-500/20 border-green-500 hover:bg-green-500/60"
             disabled={!image || dotMode}
             onClick={() => {
               setDotMode(true);
