@@ -47,13 +47,13 @@ export async function processImageWithDots(
 
         ctx.drawImage(img, 0, 0);
 
-        // Draw all historical elements (from saved edit history)
+
         imageData.editHistory.forEach((historyItem) => {
           if (!historyItem.visible) return;
 
           const dotRadius = historyItem.size / 2;
 
-          // Draw generated dots from area selection
+
           historyItem.dots.forEach((dot) => {
             ctx.beginPath();
             ctx.arc(dot.cx, dot.cy, dotRadius, 0, 2 * Math.PI);
@@ -61,7 +61,7 @@ export async function processImageWithDots(
             ctx.fill();
           });
 
-          // Draw texts from history (with visibility check)
+
           const texts = historyItem.texts || [];
           texts.forEach((textElement) => {
             if (textElement.visible === false) return;
@@ -72,7 +72,7 @@ export async function processImageWithDots(
             ctx.fillText(textElement.text, textElement.x, textElement.y);
           });
 
-          // Draw standalone dots from history (with visibility check)
+
           const standaloneDots = historyItem.standaloneDots || [];
           standaloneDots.forEach((dot) => {
             if (dot.visible === false) return;
@@ -83,7 +83,7 @@ export async function processImageWithDots(
           });
         });
 
-        // Draw current standalone dots (working state - not yet saved to history)
+
         if (currentStandaloneDots && currentStandaloneDots.length > 0) {
           currentStandaloneDots.forEach((dot) => {
             if (dot.visible === false) return;
@@ -94,7 +94,7 @@ export async function processImageWithDots(
           });
         }
 
-        // Draw current texts (working state - not yet saved to history)
+
         if (currentTexts && currentTexts.length > 0) {
           currentTexts.forEach((textElement) => {
             if (textElement.visible === false) return;

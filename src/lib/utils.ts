@@ -189,7 +189,7 @@ export function calculateProportions(amount: number, percentages: number[]) {
   return dots;
 }
 
-//convert file to data URL
+//convert file to data url
 export async function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

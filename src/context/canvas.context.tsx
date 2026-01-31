@@ -67,7 +67,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   const [randomJitter, setRandomJitter] =
     useState<CanvasState["randomJitter"]>(false);
 
-  // Store per-image working states (texts and standalone dots that haven't been saved to history)
+
   const [imageWorkingStates, setImageWorkingStates] = useState<
     Map<
       string,
@@ -105,7 +105,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
 
   const handleImageSelect = useCallback(
     (imageId: string) => {
-      // Save current working state if there's an active image
+
       if (activeImageId && activeImageId !== imageId) {
         setImageWorkingStates((prev) => {
           const newMap = new Map(prev);
@@ -117,28 +117,28 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      // Switch to new image
+
       setActiveImageId(imageId);
       setEditIndex(-1);
       setArea(false);
       setPoints([]);
       setResults([{ cx: 0, cy: 0 }]);
 
-      // Load working state for the new image (use functional update to get latest state)
+
       setImageWorkingStates((prev) => {
         const workingState = prev.get(imageId);
         if (workingState) {
           setTexts(workingState.texts);
           setStandaloneDots(workingState.standaloneDots);
         } else {
-          // No saved state, start fresh
+
           setTexts([]);
           setStandaloneDots([]);
         }
         return prev;
       });
 
-      // Clear selections
+
       setSelectedTextId(null);
       setSelectedDotId(null);
     },

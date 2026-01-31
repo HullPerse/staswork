@@ -30,7 +30,7 @@ export default function TextSettings() {
   const activeImage = imageHistory.find((img) => img.id === activeImageId);
   const history = activeImage?.editHistory || [];
 
-  // Get all texts from history + current texts
+
   const allTexts = [
     ...texts,
     ...history
@@ -45,7 +45,7 @@ export default function TextSettings() {
 
   const selectedLayer = allTexts.find((l) => l.id === selectedTextId);
 
-  // Local state for text input with throttled updates
+
   const [localText, setLocalText] = useState(
     selectedLayer?.text || textSettings.text || "",
   );
@@ -58,7 +58,7 @@ export default function TextSettings() {
 
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync local state when selected layer changes
+
   useEffect(() => {
     if (selectedLayer) {
       setLocalText(selectedLayer.text);
@@ -71,7 +71,7 @@ export default function TextSettings() {
     }
   }, [selectedLayer?.id, textSettings]);
 
-  // Throttled update function - only for selected layers
+
   const throttledUpdate = useCallback(
     (updates: Record<string, unknown>) => {
       if (throttleRef.current) {
@@ -79,7 +79,7 @@ export default function TextSettings() {
       }
       throttleRef.current = setTimeout(() => {
         if (selectedLayer) {
-          // Update the text element which should trigger history save
+
           updateTextElement(selectedLayer.id, updates);
         }
       }, 150);
@@ -87,7 +87,7 @@ export default function TextSettings() {
     [selectedLayer, updateTextElement],
   );
 
-  // Cleanup throttle on unmount
+
   useEffect(() => {
     return () => {
       if (throttleRef.current) {
@@ -101,7 +101,7 @@ export default function TextSettings() {
     if (selectedLayer) {
       throttledUpdate({ text: value || "Текст" });
     } else {
-      // Update global settings for new text creation
+
       setTextSettings({ ...textSettings, text: value });
     }
   };

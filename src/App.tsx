@@ -87,7 +87,7 @@ function App() {
     onError: () => setError(true),
   });
 
-  // Export state
+
   const [exportState, setExportState] = useState<{
     isOpen: boolean;
     currentImage: string;
@@ -111,7 +111,7 @@ function App() {
   const activeImage = imageHistory.find((img) => img.id === activeImageId);
   const image = activeImage?.file || null;
 
-  //handle paste events
+
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -128,7 +128,7 @@ function App() {
     }
   };
 
-  // Handle export/download functionality
+
   const handleDownload = async () => {
     if (imageHistory.length === 0) return;
 
@@ -143,7 +143,7 @@ function App() {
 
       const processedImages = [];
 
-      // Process each image
+
       for (let i = 0; i < imageHistory.length; i++) {
         const image = imageHistory[i];
         setExportState((prev) => ({
@@ -152,9 +152,9 @@ function App() {
           currentIndex: i + 1,
         }));
 
-        // Get working state for this specific image
+
         const workingState = (() => {
-          // For the currently active image, use the current state
+
           if (image.id === activeImageId) {
             return {
               texts: texts,
@@ -162,13 +162,13 @@ function App() {
             };
           }
 
-          // For other images, use their saved working state
+
           const savedState = imageWorkingStates.get(image.id);
           if (savedState) {
             return savedState;
           }
 
-          // No working state available, use empty arrays
+
           return {
             texts: [],
             standaloneDots: [],
@@ -183,15 +183,15 @@ function App() {
         processedImages.push(processedImage);
       }
 
-      // Create archive
+
       setExportState((prev) => ({ ...prev, status: "compressing" }));
       const archiveBlob = await createImageArchive(processedImages);
 
-      // Download archive
+
       setExportState((prev) => ({ ...prev, status: "downloading" }));
       await downloadArchive(archiveBlob);
 
-      // Completed
+
       setExportState((prev) => ({ ...prev, status: "completed" }));
     } catch (error) {
       console.error("Ошибка при эскпорте:", error);

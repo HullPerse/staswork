@@ -31,7 +31,7 @@ export default function globalHistory() {
           <p className="text-sm font-medium truncate">{image.name}</p>
           <p className="text-xs text-white">
             {(() => {
-              //calculate total area across all images
+
               const allImageAreas = imageHistory.map((img) =>
                 img.editHistory.reduce(
                   (sum, item) => sum + getPolygonArea(item.settings.points),
@@ -43,7 +43,7 @@ export default function globalHistory() {
                 0,
               );
 
-              //calculate proportions
+
               const percentages = imageHistory.map((img) => {
                 const imgTotalArea = img.editHistory.reduce(
                   (sum, item) => sum + getPolygonArea(item.settings.points),
@@ -57,7 +57,7 @@ export default function globalHistory() {
               const currentImagePercentage =
                 percentages[imageHistory.indexOf(image)];
 
-              //calculate how many dots should go to this image proportionally
+
               const proportions = calculateProportions(
                 Number(amount) || 0,
                 percentages,

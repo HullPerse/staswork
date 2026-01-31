@@ -20,7 +20,7 @@ export function Input({
   const [visiblePassword, setVisiblePassword] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // For controlled inputs, use the passed value, for uncontrolled, use internal state
+
   const [internalValue, setInternalValue] = useState(value);
   const inputValue = value !== undefined ? value : internalValue;
 
@@ -43,9 +43,9 @@ export function Input({
           "focus:outline-none focus:border-primary",
           "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
           "transition-all duration-200",
-          // File input styles
+
           "file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-bold file:text",
-          // Number input - hide spinners
+
           inputType === "number" &&
             "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
           className,

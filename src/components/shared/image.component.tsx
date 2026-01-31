@@ -40,7 +40,7 @@ const ImageComponent = ({
     }
   }, []);
 
-  // Reset error and loading state when src changes
+
   useEffect(() => {
     setHasError(false);
     setIsLoaded(false);

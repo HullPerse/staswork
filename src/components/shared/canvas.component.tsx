@@ -50,14 +50,14 @@ export default function ImageCanvas() {
     randomJitter,
   } = useCanvasState();
 
-  // Get active image data
+
   const activeImage = imageHistory.find((img) => img.id === activeImageId);
   const file = activeImage?.file;
   const dimensions = activeImage?.dimensions || { width: 0, height: 0 };
   const history = activeImage?.editHistory || [];
   const imgSrc = useMemo(() => (file ? URL.createObjectURL(file) : ""), [file]);
 
-  // Use custom hooks for drag operations
+
   const handleTextMouseDown = useTextDrag(
     { updateElement: updateTextElement, setSelectedId: setSelectedTextId },
     texts,
@@ -67,7 +67,7 @@ export default function ImageCanvas() {
     standaloneDots,
   );
 
-  // Lasso selection handlers
+
   const handleLassoChange = useCallback(
     (value: Points[]) => {
       setPoints(value);
@@ -92,7 +92,7 @@ export default function ImageCanvas() {
     [setPoints, setArea, setResults],
   );
 
-  // Canvas click handler for adding text/dots
+
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<SVGSVGElement>) => {
       if (!textMode && !dotMode) return;
@@ -153,7 +153,7 @@ export default function ImageCanvas() {
     ],
   );
 
-  // Element selection handlers
+
   const handleTextClick = useCallback(
     (e: React.MouseEvent, textId: string) => {
       e.stopPropagation();
@@ -174,9 +174,9 @@ export default function ImageCanvas() {
     [dotMode, setSelectedDotId],
   );
 
-  // Calculate dots based on selection area - only when area is active
+
   const dots = useMemo(() => {
-    // Return empty array if no active selection area
+
     if (!area || points.length < 3) return [];
 
     const result: { cx: number; cy: number }[] = [];
@@ -227,7 +227,7 @@ export default function ImageCanvas() {
           });
 
           if (edgeDistances || padding === 0) {
-            // Apply random jitter if enabled (up to 1px in any direction)
+
             const jitterX = randomJitter ? Math.random() * 2 : 0;
             const jitterY = randomJitter ? Math.random() * 2 : 0;
             result.push({ cx: worldX + jitterX, cy: worldY + jitterY });
@@ -249,7 +249,7 @@ export default function ImageCanvas() {
     randomJitter,
   ]);
 
-  // Update results in effect
+
   const setResultsRef = useRef(setResults);
   setResultsRef.current = setResults;
 
@@ -257,7 +257,7 @@ export default function ImageCanvas() {
     setResultsRef.current(dots);
   }, [dots]);
 
-  // Keyboard controls for selected elements
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (selectedTextId && textMode) {
@@ -351,7 +351,7 @@ export default function ImageCanvas() {
     updateDotElement,
   ]);
 
-  // Render lasso mode view
+
   const renderLassoMode = () => (
     <div className="relative">
       <ReactLassoSelect
@@ -404,7 +404,7 @@ export default function ImageCanvas() {
     </div>
   );
 
-  // Render dot mode view
+
   const renderDotMode = () => (
     <div className="relative">
       <Image
@@ -432,7 +432,7 @@ export default function ImageCanvas() {
     </div>
   );
 
-  // Render text mode view
+
   const renderTextMode = () => (
     <div className="relative">
       <Image
@@ -460,7 +460,7 @@ export default function ImageCanvas() {
     </div>
   );
 
-  // Render default view (area selection with polygon)
+
   const renderDefaultView = () => (
     <div className="relative">
       <Image
@@ -489,7 +489,7 @@ export default function ImageCanvas() {
     </div>
   );
 
-  // Determine which view to render
+
   const renderContent = () => {
     if (!textMode && !dotMode) {
       return renderLassoMode();

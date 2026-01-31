@@ -19,7 +19,7 @@ export default function DotSettings() {
   const activeImage = imageHistory.find((img) => img.id === activeImageId);
   const history = activeImage?.editHistory || [];
 
-  // Get all dots from history + current standalone dots
+
   const allDots = [
     ...standaloneDots,
     ...history
@@ -34,14 +34,14 @@ export default function DotSettings() {
 
   const selectedLayer = allDots.find((l) => l.id === selectedDotId);
 
-  // Local state for dot settings with throttled updates
+
   const [localDotSize, setLocalDotSize] = useState(
     selectedLayer?.size || dotSettings.size,
   );
 
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync local state when selected layer changes
+
   useEffect(() => {
     if (selectedLayer) {
       setLocalDotSize(selectedLayer.size);
@@ -50,7 +50,7 @@ export default function DotSettings() {
     }
   }, [selectedLayer?.id, dotSettings]);
 
-  // Throttled update function - only for selected layers
+
   const throttledUpdate = useCallback(
     (updates: Record<string, unknown>) => {
       if (throttleRef.current) {
@@ -58,7 +58,7 @@ export default function DotSettings() {
       }
       throttleRef.current = setTimeout(() => {
         if (selectedLayer) {
-          // Update the dot element
+
           updateDotElement(selectedLayer.id, updates);
         }
       }, 150);
@@ -66,7 +66,7 @@ export default function DotSettings() {
     [selectedLayer, updateDotElement],
   );
 
-  // Cleanup throttle on unmount
+
   useEffect(() => {
     return () => {
       if (throttleRef.current) {
@@ -80,7 +80,7 @@ export default function DotSettings() {
     if (selectedLayer) {
       throttledUpdate({ size: value });
     } else {
-      // Update global settings for new dot creation
+
       setDotSettings({ ...dotSettings, size: value });
     }
   };
