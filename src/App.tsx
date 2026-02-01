@@ -22,6 +22,7 @@ import {
 } from "react";
 import { useDropzone } from "react-dropzone";
 import ExportProgress from "./components/features/export.component";
+import PDFPageSelectionDialog from "./components/features/selection.component";
 import Overlay from "./components/shared/overlay.component";
 import { Button } from "./components/ui/button.component";
 import { useCanvasState } from "./context/canvas.context";
@@ -34,7 +35,7 @@ import {
   ProcessedImage,
 } from "./lib/export.utils";
 import { pdf, Document, Page, Image as PDFImage } from "@react-pdf/renderer";
-import { convertPDFToImages, isPDFFile } from "./lib/pdf.utils";
+import { isPDFFile } from "./lib/pdf.utils";
 
 const Canvas = lazy(() => import("./components/features/canvas.component"));
 const Toolbox = lazy(() => import("@/components/shared/toolbox.component"));
@@ -92,6 +93,14 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
+  const [pdfDialog, setPdfDialog] = useState<{
+    isOpen: boolean;
+    file: File | null;
+  }>({
+    isOpen: false,
+    file: null,
+  });
+
   const onDrop = useCallback(
     async (files: File[]) => {
       if (!files?.length) return;
@@ -105,22 +114,16 @@ function App() {
 
         if (imageFiles.length === 0 && pdfFiles.length === 0) return;
 
-        const allImageFiles: File[] = [...imageFiles];
-
-        // Process PDF files and convert to images
-        for (const pdfFile of pdfFiles) {
-          try {
-            const pdfImages = await convertPDFToImages(pdfFile);
-            allImageFiles.push(...pdfImages.map((processed) => processed.file));
-          } catch (error) {
-            console.error(`Error processing ${pdfFile.name}:`, error);
-            // Continue processing other files even if one fails
-          }
+        if (imageFiles.length > 0) {
+          await handleImagesUpload(imageFiles);
         }
 
-        if (allImageFiles.length === 0) return;
-
-        handleImagesUpload(allImageFiles);
+        if (pdfFiles.length > 0) {
+          setPdfDialog({
+            isOpen: true,
+            file: pdfFiles[0],
+          });
+        }
       } catch (e) {
         setError(true);
         console.error(e);
@@ -130,6 +133,23 @@ function App() {
     },
     [handleImagesUpload],
   );
+
+  const handlePDFPageSelection = useCallback(
+    async (selectedPages: any[]) => {
+      try {
+        const files = selectedPages.map((page) => page.file);
+        await handleImagesUpload(files);
+      } catch (error) {
+        console.error("Error processing selected PDF pages:", error);
+        setError(true);
+      }
+    },
+    [handleImagesUpload],
+  );
+
+  const closePDFDialog = useCallback(() => {
+    setPdfDialog({ isOpen: false, file: null });
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -448,6 +468,16 @@ function App() {
         status={exportState.status}
         error={exportState.error}
       />
+
+      {/* PDF Page Selection Dialog */}
+      {pdfDialog.file && (
+        <PDFPageSelectionDialog
+          file={pdfDialog.file}
+          isOpen={pdfDialog.isOpen}
+          onClose={closePDFDialog}
+          onConfirm={handlePDFPageSelection}
+        />
+      )}
     </main>
   );
 }
