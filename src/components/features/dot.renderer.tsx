@@ -27,8 +27,8 @@ interface StandaloneDotsProps {
   dots: DotElement[];
   isInteractive?: boolean;
   selectedDotId?: string | null;
-  onDotMouseDown?: (e: React.MouseEvent, dotId: string) => void;
-  onDotClick?: (e: React.MouseEvent, dotId: string) => void;
+  onDotMouseDown?: (e: MouseEvent, dotId: string) => void;
+  onDotClick?: (e: MouseEvent, dotId: string) => void;
 }
 
 function DotsRenderer({

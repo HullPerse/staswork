@@ -4,13 +4,22 @@ import {
   ArrowLeft,
   ArrowRight,
   Dot,
-  Download,
+  FileText,
+  FolderArchive,
   ImageMinus,
   ImagePlus,
   LassoSelect,
   Type,
 } from "lucide-react";
-import { lazy, Suspense, useCallback, useMemo, useState, useRef, useEffect } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
 import { useDropzone } from "react-dropzone";
 import ExportProgress from "./components/features/export.component";
 import Overlay from "./components/shared/overlay.component";
@@ -22,7 +31,10 @@ import {
   createImageArchive,
   downloadArchive,
   processImageWithDots,
+  ProcessedImage,
 } from "./lib/export.utils";
+import { pdf, Document, Page, Image as PDFImage } from "@react-pdf/renderer";
+import { convertPDFToImages, isPDFFile } from "./lib/pdf.utils";
 
 const Canvas = lazy(() => import("./components/features/canvas.component"));
 const Toolbox = lazy(() => import("@/components/shared/toolbox.component"));
@@ -84,22 +96,31 @@ function App() {
     async (files: File[]) => {
       if (!files?.length) return;
 
-      const imageFiles = files.filter((file) => file.type.startsWith("image/"));
-
-      if (imageFiles.length === 0) return;
-
       setLoading(true);
       try {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const src = event.target?.result as string;
-          const img = new Image();
+        const imageFiles = files.filter((file) =>
+          file.type.startsWith("image/"),
+        );
+        const pdfFiles = files.filter((file) => isPDFFile(file));
 
-          img.src = src;
-        };
-        reader.readAsDataURL(imageFiles[0]);
+        if (imageFiles.length === 0 && pdfFiles.length === 0) return;
 
-        handleImagesUpload(imageFiles);
+        const allImageFiles: File[] = [...imageFiles];
+
+        // Process PDF files and convert to images
+        for (const pdfFile of pdfFiles) {
+          try {
+            const pdfImages = await convertPDFToImages(pdfFile);
+            allImageFiles.push(...pdfImages.map((processed) => processed.file));
+          } catch (error) {
+            console.error(`Error processing ${pdfFile.name}:`, error);
+            // Continue processing other files even if one fails
+          }
+        }
+
+        if (allImageFiles.length === 0) return;
+
+        handleImagesUpload(allImageFiles);
       } catch (e) {
         setError(true);
         console.error(e);
@@ -114,6 +135,7 @@ function App() {
     onDrop,
     accept: {
       "image/*": [".jpeg", ".jpg", ".png", ".webp"],
+      "application/pdf": [".pdf"],
     },
     multiple: true,
     noClick: false,
@@ -205,6 +227,77 @@ function App() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (imageHistory.length === 0) return;
+
+    try {
+      setExportState({
+        isOpen: true,
+        currentImage: "",
+        currentIndex: 1,
+        total: imageHistory.length,
+        status: "processing",
+      });
+
+      const processedImages: ProcessedImage[] = [];
+
+      for (let i = 0; i < imageHistory.length; i++) {
+        const image = imageHistory[i];
+        setExportState((prev) => ({
+          ...prev,
+          currentImage: image.name,
+          currentIndex: i + 1,
+        }));
+
+        const processedImage = await processImageWithDots(image);
+        processedImages.push(processedImage);
+      }
+
+      setExportState((prev) => ({ ...prev, status: "compressing" }));
+
+      const MyDocument = () => (
+        <Document>
+          {processedImages.map((processedImage, index) => (
+            <Page
+              key={index}
+              size={{
+                width: processedImage.dimensions.width,
+                height: processedImage.dimensions.height,
+              }}
+              style={{ padding: 0 }}
+            >
+              <PDFImage
+                src={processedImage.blob}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </Page>
+          ))}
+        </Document>
+      );
+
+      setExportState((prev) => ({ ...prev, status: "downloading" }));
+      const blob = await pdf(<MyDocument />).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Результат.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setExportState((prev) => ({ ...prev, status: "completed" }));
+    } catch (error) {
+      console.error("Ошибка при экспорте PDF:", error);
+      setExportState((prev) => ({
+        ...prev,
+        status: "error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
+      }));
+    }
+  };
+
   const closeExportModal = () => {
     setExportState((prev) => ({ ...prev, isOpen: false }));
   };
@@ -270,13 +363,20 @@ function App() {
             <Dot className="size-10" />
           </Button>
         </div>
-        <div>
+        <div className="flex flex-row gap-2">
+          <Button
+            className="w-16 h-16"
+            disabled={!image}
+            onClick={handleDownloadPdf}
+          >
+            <FileText className="size-10" />
+          </Button>
           <Button
             className="w-16 h-16"
             onClick={handleDownload}
             disabled={!image}
           >
-            <Download className="size-10" />
+            <FolderArchive className="size-10" />
           </Button>
         </div>
       </section>

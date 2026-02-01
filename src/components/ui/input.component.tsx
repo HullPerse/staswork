@@ -5,7 +5,7 @@ import {
   EyeOffIcon,
   InfinityIcon,
 } from "lucide-react";
-import { type ComponentProps, useRef, useState } from "react";
+import { ChangeEvent, type ComponentProps, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export function Input({
@@ -19,7 +19,6 @@ export function Input({
 }: ComponentProps<"input"> & { arrows?: boolean; amount?: boolean }) {
   const [visiblePassword, setVisiblePassword] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
-
 
   const [internalValue, setInternalValue] = useState(value);
   const inputValue = value !== undefined ? value : internalValue;
@@ -86,7 +85,7 @@ export function Input({
               if (onChange) {
                 const syntheticEvent = {
                   target: { value: newValue },
-                } as React.ChangeEvent<HTMLInputElement>;
+                } as ChangeEvent<HTMLInputElement>;
                 onChange(syntheticEvent);
               }
               if (value === undefined) {
@@ -116,7 +115,7 @@ export function Input({
               if (onChange) {
                 const syntheticEvent = {
                   target: { value: newValue },
-                } as React.ChangeEvent<HTMLInputElement>;
+                } as ChangeEvent<HTMLInputElement>;
                 onChange(syntheticEvent);
               }
               if (value === undefined) {

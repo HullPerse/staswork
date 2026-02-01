@@ -25,8 +25,9 @@ export default defineConfig(async () => ({
         manualChunks: {
           vendor: ["react", "react-dom"],
           ui: ["@base-ui/react", "lucide-react"],
-          image: ["react-dropzone", "react-zoom-pan-pinch"],
+          image: ["react-dropzone", "react-zoom-pan-pinch", "react-pdf"],
           utils: ["jszip", "clsx"],
+          pdf: ["pdfjs-dist"],
         },
       },
     },
@@ -35,7 +36,10 @@ export default defineConfig(async () => ({
     sourcemap: false,
   },
   optimizeDeps: {
-    include: ["react", "react-dom"],
+    include: ["react", "react-dom", "pdfjs-dist"],
+  },
+  worker: {
+    format: "es"
   },
   resolve: {
     alias: {

@@ -5,8 +5,8 @@ interface TextsRendererProps {
   texts: TextElement[];
   isInteractive?: boolean;
   selectedTextId?: string | null;
-  onTextMouseDown?: (e: React.MouseEvent, textId: string) => void;
-  onTextClick?: (e: React.MouseEvent, textId: string) => void;
+  onTextMouseDown?: (e: MouseEvent, textId: string) => void;
+  onTextClick?: (e: MouseEvent, textId: string) => void;
 }
 
 function TextsRenderer({

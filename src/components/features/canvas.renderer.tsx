@@ -5,7 +5,7 @@ import { HistoryRenderer } from "./history.renderer";
 import { TextRenderer } from "./text.renderer";
 import { Image } from "../shared/image.component";
 import { DotElement, Points, PointsHistory, TextElement } from "@/types";
-import { useCallback } from "react";
+import { useCallback, type MouseEvent } from "react";
 import { useCanvasState } from "@/context/canvas.context";
 import { useTextState } from "@/context/text.context";
 import { useDotState } from "@/context/dot.context";
@@ -74,7 +74,7 @@ export default function ModeRenderer({
   );
 
   const handleCanvasClick = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
+    (e: MouseEvent<SVGSVGElement>) => {
       if (!textMode && !dotMode) return;
 
       const target = e.target as SVGElement;
@@ -143,7 +143,7 @@ export default function ModeRenderer({
   );
 
   const handleTextClick = useCallback(
-    (e: React.MouseEvent, textId: string) => {
+    (e: MouseEvent, textId: string) => {
       e.stopPropagation();
       if (textMode) {
         setSelectedTextId(textId);
@@ -153,7 +153,7 @@ export default function ModeRenderer({
   );
 
   const handleDotClick = useCallback(
-    (e: React.MouseEvent, dotId: string) => {
+    (e: MouseEvent, dotId: string) => {
       e.stopPropagation();
       if (dotMode) {
         setSelectedDotId(dotId);

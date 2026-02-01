@@ -241,3 +241,28 @@ export async function createImageData(file: File): Promise<ImageData> {
     currentStandaloneDots: [],
   };
 }
+
+//create image data from processed file (with PDF metadata)
+export async function createImageDataWithMetadata(processedFile: { 
+  file: File; 
+  dimensions: { width: number; height: number }; 
+  sourceFile?: File; 
+  pageNumber?: number; 
+}): Promise<ImageData> {
+  const dataUrl = await fileToDataUrl(processedFile.file);
+
+  return {
+    id: crypto.randomUUID(),
+    file: processedFile.file,
+    BlobUrl: dataUrl,
+    dimensions: processedFile.dimensions,
+    editHistory: [],
+    name: processedFile.sourceFile 
+      ? `${processedFile.sourceFile.name.replace('.pdf', '')}${processedFile.pageNumber ? `_page_${processedFile.pageNumber}` : ''}.png`
+      : processedFile.file.name,
+    currentTexts: [],
+    currentStandaloneDots: [],
+    sourceFile: processedFile.sourceFile,
+    pageNumber: processedFile.pageNumber,
+  };
+}

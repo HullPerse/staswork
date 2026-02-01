@@ -54,6 +54,8 @@ export type ImageData = {
   name: string;
   currentTexts: TextElement[];
   currentStandaloneDots: DotElement[];
+  sourceFile?: File;
+  pageNumber?: number;
 };
 
 // Canvas context for rendered dots (not standalone ones)

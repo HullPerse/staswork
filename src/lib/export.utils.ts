@@ -4,6 +4,7 @@ import { ImageData, TextElement, DotElement } from "@/types";
 export interface ProcessedImage {
   name: string;
   blob: Blob;
+  dimensions: { width: number; height: number };
 }
 
 export function getVisibleDotsForImage(imageData: ImageData) {
@@ -111,7 +112,7 @@ export async function processImageWithDots(
 
             const name =
               imageData.name.replace(/\.[^/.]+$/, "") + "_processed.png";
-            resolve({ name, blob });
+            resolve({ name, blob, dimensions: imageData.dimensions });
           },
           "image/png",
           1.0,
@@ -131,8 +132,33 @@ export async function createImageArchive(
 ): Promise<Blob> {
   const zip = new JSZip();
 
+  const pdfGroups = new Map<string, ProcessedImage[]>();
+  const standaloneImages: ProcessedImage[] = [];
+
   processedImages.forEach((image) => {
+    if (image.name.includes("_page_")) {
+      const pdfName = image.name.split("_page_")[0];
+      if (!pdfGroups.has(pdfName)) {
+        pdfGroups.set(pdfName, []);
+      }
+      pdfGroups.get(pdfName)!.push(image);
+    } else {
+      standaloneImages.push(image);
+    }
+  });
+
+  standaloneImages.forEach((image) => {
     zip.file(image.name, image.blob);
+  });
+
+  pdfGroups.forEach((images, pdfName) => {
+    const pdfFolder = zip.folder(pdfName);
+    if (pdfFolder) {
+      images.forEach((image) => {
+        const pageName = image.name.replace(`${pdfName}_page_`, "page_");
+        pdfFolder.file(pageName, image.blob);
+      });
+    }
   });
 
   return await zip.generateAsync({ type: "blob" });

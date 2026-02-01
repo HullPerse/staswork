@@ -6,9 +6,12 @@ interface UseElementDragParams {
   setSelectedId: (id: string) => void;
 }
 
-export function useTextDrag({ updateElement, setSelectedId }: UseElementDragParams, texts: TextElement[]) {
+export function useTextDrag(
+  { updateElement, setSelectedId }: UseElementDragParams,
+  texts: TextElement[],
+) {
   const handleTextMouseDown = useCallback(
-    (e: React.MouseEvent, textId: string) => {
+    (e: MouseEvent, textId: string) => {
       e.stopPropagation();
       setSelectedId(textId);
 
@@ -64,15 +67,18 @@ export function useTextDrag({ updateElement, setSelectedId }: UseElementDragPara
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [setSelectedId, updateElement, texts]
+    [setSelectedId, updateElement, texts],
   );
 
   return handleTextMouseDown;
 }
 
-export function useDotDrag({ updateElement, setSelectedId }: UseElementDragParams, dots: DotElement[]) {
+export function useDotDrag(
+  { updateElement, setSelectedId }: UseElementDragParams,
+  dots: DotElement[],
+) {
   const handleDotMouseDown = useCallback(
-    (e: React.MouseEvent, dotId: string) => {
+    (e: MouseEvent, dotId: string) => {
       e.stopPropagation();
       setSelectedId(dotId);
 
@@ -128,7 +134,7 @@ export function useDotDrag({ updateElement, setSelectedId }: UseElementDragParam
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [setSelectedId, updateElement, dots]
+    [setSelectedId, updateElement, dots],
   );
 
   return handleDotMouseDown;

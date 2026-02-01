@@ -15,8 +15,9 @@ import {
   TextElement,
   DotElement,
 } from "@/types";
-import { createImageData } from "@/lib/utils";
+import { createImageDataWithMetadata } from "@/lib/utils";
 import ImageStorage from "@/service/image.service";
+import type { ProcessedFile } from "@/service/image.service";
 
 const CanvasStateContext = createContext<TCanvasStateContext | undefined>(
   undefined,
@@ -50,15 +51,23 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   const [randomJitter, setRandomJitter] =
     useState<CanvasState["randomJitter"]>(false);
 
+  const imageService = new ImageStorage();
+  
   const handleImagesUpload = useCallback(
     async (files: File[]) => {
-      const imageFiles = files.filter((file) => file.type.startsWith("image/"));
-
-      if (imageFiles.length === 0) return;
+      if (!files.length) return;
 
       try {
+        const processedFiles = await Promise.all(
+          files.map((file) => imageService.processFile(file))
+        );
+        
+        const allProcessedFiles: ProcessedFile[] = processedFiles.flat();
+
         const newImageData = await Promise.all(
-          imageFiles.map((file) => createImageData(file)),
+          allProcessedFiles.map((processedFile) => 
+            createImageDataWithMetadata(processedFile)
+          ),
         );
 
         setImageHistory((prev) => [...prev, ...newImageData]);
@@ -67,7 +76,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
           setActiveImageId(newImageData[0].id);
         }
       } catch (error) {
-        console.error("Failed to process images:", error);
+        console.error("Failed to process files:", error);
       }
     },
     [activeImageId],

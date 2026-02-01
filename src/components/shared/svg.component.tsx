@@ -1,10 +1,10 @@
-import React from "react";
+import { ReactNode, type MouseEvent } from "react";
 
 interface SvgOverlayProps {
   dimensions: { width: number; height: number };
   className?: string;
-  onClick?: (e: React.MouseEvent<SVGSVGElement>) => void;
-  children: React.ReactNode;
+  onClick?: (e: MouseEvent<SVGSVGElement>) => void;
+  children: ReactNode;
 }
 
 export function SvgOverlay({
