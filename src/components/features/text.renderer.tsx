@@ -1,12 +1,12 @@
 import { TextElement } from "@/types";
-import { memo } from "react";
+import React, { memo } from "react";
 
 interface TextsRendererProps {
   texts: TextElement[];
   isInteractive?: boolean;
   selectedTextId?: string | null;
-  onTextMouseDown?: (e: MouseEvent, textId: string) => void;
-  onTextClick?: (e: MouseEvent, textId: string) => void;
+  onTextMouseDown?: (e: React.MouseEvent, textId: string) => void;
+  onTextClick?: (e: React.MouseEvent, textId: string) => void;
 }
 
 function TextsRenderer({
@@ -78,7 +78,7 @@ function TextsRenderer({
                     ? "drop-shadow(0 1px 2px rgba(0,0,0,0.2))"
                     : "none",
                 }}
-                onMouseDown={(e) => onTextMouseDown?.(e, textElement.id)}
+                onMouseDown={(e) => onTextMouseDown?.(e as any, textElement.id)}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.cursor = "grab";
                   e.currentTarget.style.filter =
@@ -90,7 +90,7 @@ function TextsRenderer({
                     ? "drop-shadow(0 1px 2px rgba(0,0,0,0.2))"
                     : "none";
                 }}
-                onClick={(e) => onTextClick?.(e, textElement.id)}
+                onClick={(e) => onTextClick?.(e as any, textElement.id)}
               >
                 {textElement.text}
               </text>

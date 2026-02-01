@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { TextElement, DotElement } from "@/types";
+import type { MouseEvent } from "react";
 
 interface UseElementDragParams {
   updateElement: (id: string, updates: { x: number; y: number }) => void;
@@ -55,7 +56,7 @@ export function useTextDrag(
           cancelAnimationFrame(animationFrameId);
         }
 
-        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mousemove", handleMouseMove as any);
         document.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
@@ -64,7 +65,7 @@ export function useTextDrag(
       document.body.style.cursor = "grabbing";
       document.body.style.userSelect = "none";
 
-      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mousemove", handleMouseMove as any);
       document.addEventListener("mouseup", handleMouseUp);
     },
     [setSelectedId, updateElement, texts],
@@ -122,7 +123,7 @@ export function useDotDrag(
           cancelAnimationFrame(animationFrameId);
         }
 
-        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mousemove", handleMouseMove as any);
         document.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
@@ -131,7 +132,7 @@ export function useDotDrag(
       document.body.style.cursor = "grabbing";
       document.body.style.userSelect = "none";
 
-      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mousemove", handleMouseMove as any);
       document.addEventListener("mouseup", handleMouseUp);
     },
     [setSelectedId, updateElement, dots],

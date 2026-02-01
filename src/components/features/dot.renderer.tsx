@@ -1,5 +1,5 @@
 import { DotElement } from "@/types";
-import { memo } from "react";
+import React, { memo } from "react";
 
 interface GeneratedDotsProps {
   dots: { cx: number; cy: number }[];
@@ -27,8 +27,8 @@ interface StandaloneDotsProps {
   dots: DotElement[];
   isInteractive?: boolean;
   selectedDotId?: string | null;
-  onDotMouseDown?: (e: MouseEvent, dotId: string) => void;
-  onDotClick?: (e: MouseEvent, dotId: string) => void;
+  onDotMouseDown?: (e: React.MouseEvent, dotId: string) => void;
+  onDotClick?: (e: React.MouseEvent, dotId: string) => void;
 }
 
 function DotsRenderer({
@@ -88,7 +88,7 @@ function DotsRenderer({
                     ? "drop-shadow(0 1px 2px rgba(0,0,0,0.2))"
                     : "none",
                 }}
-                onMouseDown={(e) => onDotMouseDown?.(e, dotElement.id)}
+                onMouseDown={(e) => onDotMouseDown?.(e as any, dotElement.id)}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.cursor = "grab";
                   e.currentTarget.style.filter = isSelected
@@ -101,7 +101,7 @@ function DotsRenderer({
                     ? "drop-shadow(0 1px 2px rgba(0,0,0,0.2))"
                     : "none";
                 }}
-                onClick={(e) => onDotClick?.(e, dotElement.id)}
+                onClick={(e) => onDotClick?.(e as any, dotElement.id)}
               />
             </g>
           );
