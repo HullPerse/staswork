@@ -92,8 +92,8 @@ function ImageCanvas() {
           });
 
           if (edgeDistances || padding === 0) {
-            const jitterX = randomJitter ? Math.random() * 2 : 0;
-            const jitterY = randomJitter ? Math.random() * 2 : 0;
+            const jitterX = randomJitter ? Math.random() * 4 : 0;
+            const jitterY = randomJitter ? Math.random() * 4 : 0;
             result.push({ cx: worldX + jitterX, cy: worldY + jitterY });
             count++;
           }
