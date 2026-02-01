@@ -23,7 +23,7 @@ export default function globalHistory() {
     >
       <div className="flex items-center gap-2 mb-2">
         <Image
-          src={image.dataUrl}
+          src={image.BlobUrl}
           alt={image.name}
           className="w-14 h-14 object-cover rounded border"
         />

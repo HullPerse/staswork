@@ -1,8 +1,5 @@
-import { lazy, Suspense, useCallback, useState } from "react";
-import { useCanvasState } from "./context/canvas.context";
-import Overlay from "./components/shared/overlay.component";
-import ExportProgress from "./components/shared/export.component";
-import { Button } from "./components/ui/button.component";
+//TODO: save input before editing to cache
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,14 +10,21 @@ import {
   LassoSelect,
   Type,
 } from "lucide-react";
+import { lazy, Suspense, useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import ExportProgress from "./components/features/export.component";
+import Overlay from "./components/shared/overlay.component";
+import { Button } from "./components/ui/button.component";
+import { useCanvasState } from "./context/canvas.context";
+import { useTextState } from "./context/text.context";
+import { useDotState } from "./context/dot.context";
 import {
-  processImageWithDots,
   createImageArchive,
   downloadArchive,
+  processImageWithDots,
 } from "./lib/export.utils";
-import { useDropzone } from "react-dropzone";
 
-const ImageCanvas = lazy(() => import("./components/shared/canvas.component"));
+const Canvas = lazy(() => import("./components/features/canvas.component"));
 const Toolbox = lazy(() => import("@/components/shared/toolbox.component"));
 
 function App() {
@@ -37,12 +41,12 @@ function App() {
     textMode,
     setTextMode,
     setArea,
-    setStandaloneDots,
-    setTexts,
-    texts,
-    standaloneDots,
-    imageWorkingStates,
   } = useCanvasState();
+
+  const { texts } = useTextState();
+  const { standaloneDots } = useDotState();
+  const { clearTexts } = useTextState();
+  const { clearDots } = useDotState();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -87,7 +91,6 @@ function App() {
     onError: () => setError(true),
   });
 
-
   const [exportState, setExportState] = useState<{
     isOpen: boolean;
     currentImage: string;
@@ -111,7 +114,6 @@ function App() {
   const activeImage = imageHistory.find((img) => img.id === activeImageId);
   const image = activeImage?.file || null;
 
-
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -128,7 +130,6 @@ function App() {
     }
   };
 
-
   const handleDownload = async () => {
     if (imageHistory.length === 0) return;
 
@@ -143,7 +144,6 @@ function App() {
 
       const processedImages = [];
 
-
       for (let i = 0; i < imageHistory.length; i++) {
         const image = imageHistory[i];
         setExportState((prev) => ({
@@ -152,45 +152,19 @@ function App() {
           currentIndex: i + 1,
         }));
 
-
-        const workingState = (() => {
-
-          if (image.id === activeImageId) {
-            return {
-              texts: texts,
-              standaloneDots: standaloneDots,
-            };
-          }
-
-
-          const savedState = imageWorkingStates.get(image.id);
-          if (savedState) {
-            return savedState;
-          }
-
-
-          return {
-            texts: [],
-            standaloneDots: [],
-          };
-        })();
-
         const processedImage = await processImageWithDots(
           image,
-          workingState.texts,
-          workingState.standaloneDots,
+          texts,
+          standaloneDots,
         );
         processedImages.push(processedImage);
       }
 
-
       setExportState((prev) => ({ ...prev, status: "compressing" }));
       const archiveBlob = await createImageArchive(processedImages);
 
-
       setExportState((prev) => ({ ...prev, status: "downloading" }));
       await downloadArchive(archiveBlob);
-
 
       setExportState((prev) => ({ ...prev, status: "completed" }));
     } catch (error) {
@@ -223,8 +197,8 @@ function App() {
                 if (!activeImageId) return;
                 setImageHistory([]);
                 setActiveImageId(null);
-                setStandaloneDots([]);
-                setTexts([]);
+                clearDots();
+                clearTexts();
               }}
             >
               <ImageMinus className="size-10" />
@@ -321,7 +295,7 @@ function App() {
                 <div className="flex h-full w-full bg-white/20 animate-pulse" />
               }
             >
-              <ImageCanvas />
+              <Canvas />
             </Suspense>
           ) : (
             <Overlay

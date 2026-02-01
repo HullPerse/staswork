@@ -1,3 +1,4 @@
+
 import { Points, ImageData } from "@/types";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -197,13 +198,15 @@ export async function fileToDataUrl(file: File): Promise<string> {
       const result = event.target?.result as string;
       resolve(result);
     };
-    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
 }
 
 //get image dimensions from file
-export function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+export function getImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -215,7 +218,7 @@ export function getImageDimensions(file: File): Promise<{ width: number; height:
           height: img.height,
         });
       };
-      img.onerror = () => reject(new Error('Failed to load image'));
+      img.onerror = () => reject(new Error("Failed to load image"));
       img.src = src;
     };
     reader.readAsDataURL(file);
@@ -224,15 +227,13 @@ export function getImageDimensions(file: File): Promise<{ width: number; height:
 
 //create image data from file
 export async function createImageData(file: File): Promise<ImageData> {
-  const [dataUrl, dimensions] = await Promise.all([
-    fileToDataUrl(file),
-    getImageDimensions(file),
-  ]);
+  const dataUrl = await fileToDataUrl(file);
+  const dimensions = await getImageDimensions(file);
   
   return {
     id: crypto.randomUUID(),
     file,
-    dataUrl,
+    BlobUrl: dataUrl,
     dimensions,
     editHistory: [],
     name: file.name,

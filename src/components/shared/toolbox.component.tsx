@@ -1,7 +1,7 @@
 import { useCanvasState } from "@/context/canvas.context";
-import TextSettings from "@/components/shared/text.settings";
-import DotSettings from "@/components/shared/dot.settings";
-import CanvasSettings from "@/components/shared/canvas.settings";
+import TextSettings from "@/components/features/text.settings";
+import DotSettings from "@/components/features/dot.settings";
+import CanvasSettings from "@/components/features/canvas.settings";
 
 export default function Toolbox() {
   const { textMode, dotMode } = useCanvasState();

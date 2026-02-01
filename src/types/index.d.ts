@@ -45,7 +45,7 @@ export type PointsHistory = {
 export type ImageData = {
   id: string;
   file: File;
-  dataUrl: string;
+  BlobUrl: string;
   dimensions: {
     width: number;
     height: number;
@@ -54,6 +54,7 @@ export type ImageData = {
   name: string;
 };
 
+// Canvas context for rendered dots (not standalone ones)
 export interface CanvasState {
   imageHistory: ImageData[];
   activeImageId: string | null;
@@ -69,20 +70,6 @@ export interface CanvasState {
   results: { cx: number; cy: number }[];
   dotMode: boolean;
   textMode: boolean;
-  texts: TextElement[];
-  standaloneDots: DotElement[];
-  textSettings: {
-    fontSize: number;
-    fontFamily: string;
-    color: string;
-    text: string;
-  };
-  dotSettings: {
-    size: number;
-    color: string;
-  };
-  selectedTextId: string | null;
-  selectedDotId: string | null;
   randomJitter: boolean;
 }
 
@@ -101,6 +88,33 @@ export interface CanvasStateActions {
   setResults: (results: { cx: number; cy: number }[]) => void;
   setTextMode: (mode: boolean) => void;
   setDotMode: (mode: boolean) => void;
+  setRandomJitter: (jitter: boolean) => void;
+  handleImagesUpload: (files: File[]) => Promise<void>;
+  handleImageSelect: (imageId: string) => void;
+  updateActiveImageHistory: (newHistory: PointsHistory[]) => void;
+}
+
+export type CanvasStateContext = CanvasState & CanvasStateActions;
+
+// Legacy type for backward compatibility
+export interface LegacyCanvasState extends CanvasState {
+  texts: TextElement[];
+  standaloneDots: DotElement[];
+  textSettings: {
+    fontSize: number;
+    fontFamily: string;
+    color: string;
+    text: string;
+  };
+  dotSettings: {
+    size: number;
+    color: string;
+  };
+  selectedTextId: string | null;
+  selectedDotId: string | null;
+}
+
+export interface LegacyCanvasStateActions extends CanvasStateActions {
   setTexts: (texts: TextElement[]) => void;
   setStandaloneDots: (dots: DotElement[]) => void;
   setTextSettings: (settings: {
@@ -118,10 +132,6 @@ export interface CanvasStateActions {
   deleteDotElement: (id: string) => void;
   selectTextElement: (id: string) => void;
   selectDotElement: (id: string) => void;
-  setRandomJitter: (jitter: boolean) => void;
-  handleImagesUpload: (files: File[]) => Promise<void>;
-  handleImageSelect: (imageId: string) => void;
-  updateActiveImageHistory: (newHistory: PointsHistory[]) => void;
   imageWorkingStates: Map<
     string,
     {
@@ -130,5 +140,3 @@ export interface CanvasStateActions {
     }
   >;
 }
-
-export type CanvasStateContext = CanvasState & CanvasStateActions;

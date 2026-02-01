@@ -47,12 +47,10 @@ export async function processImageWithDots(
 
         ctx.drawImage(img, 0, 0);
 
-
         imageData.editHistory.forEach((historyItem) => {
           if (!historyItem.visible) return;
 
           const dotRadius = historyItem.size / 2;
-
 
           historyItem.dots.forEach((dot) => {
             ctx.beginPath();
@@ -60,7 +58,6 @@ export async function processImageWithDots(
             ctx.fillStyle = "black";
             ctx.fill();
           });
-
 
           const texts = historyItem.texts || [];
           texts.forEach((textElement) => {
@@ -72,7 +69,6 @@ export async function processImageWithDots(
             ctx.fillText(textElement.text, textElement.x, textElement.y);
           });
 
-
           const standaloneDots = historyItem.standaloneDots || [];
           standaloneDots.forEach((dot) => {
             if (dot.visible === false) return;
@@ -83,7 +79,6 @@ export async function processImageWithDots(
           });
         });
 
-
         if (currentStandaloneDots && currentStandaloneDots.length > 0) {
           currentStandaloneDots.forEach((dot) => {
             if (dot.visible === false) return;
@@ -93,7 +88,6 @@ export async function processImageWithDots(
             ctx.fill();
           });
         }
-
 
         if (currentTexts && currentTexts.length > 0) {
           currentTexts.forEach((textElement) => {
@@ -126,7 +120,7 @@ export async function processImageWithDots(
     };
 
     img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = imageData.dataUrl;
+    img.src = imageData.BlobUrl;
   });
 }
 
@@ -144,7 +138,7 @@ export async function createImageArchive(
 
 export async function downloadArchive(
   archiveBlob: Blob,
-  filename: string = "images_with_dots.zip",
+  filename: string = "Результат.zip",
 ) {
   const url = URL.createObjectURL(archiveBlob);
   const a = document.createElement("a");

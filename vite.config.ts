@@ -7,7 +7,6 @@ import viteCompression from "vite-plugin-compression";
 
 const host = process.env.TAURI_DEV_HOST;
 
-
 // @ts-expect-error lint is acting weird
 export default defineConfig(async () => ({
   plugins: [
@@ -19,11 +18,24 @@ export default defineConfig(async () => ({
       ext: ".br",
     }),
   ],
-
-
   clearScreen: false,
   build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          ui: ["@base-ui/react", "lucide-react"],
+          image: ["react-dropzone", "react-zoom-pan-pinch"],
+          utils: ["jszip", "clsx"],
+        },
+      },
+    },
+    minify: "terser",
+    target: "es2020",
     sourcemap: false,
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom"],
   },
   resolve: {
     alias: {
@@ -43,7 +55,6 @@ export default defineConfig(async () => ({
         }
       : undefined,
     watch: {
-
       ignored: ["**/src-tauri/**"],
     },
   },

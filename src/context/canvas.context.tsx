@@ -4,16 +4,17 @@ import {
   useState,
   useCallback,
   ReactNode,
+  useMemo,
+  useEffect,
 } from "react";
 import {
   CanvasState,
   CanvasStateContext as TCanvasStateContext,
   PointsHistory,
   ImageData,
-  TextElement,
-  DotElement,
 } from "@/types";
 import { createImageData } from "@/lib/utils";
+import ImageStorage from "@/service/image.service";
 
 const CanvasStateContext = createContext<TCanvasStateContext | undefined>(
   undefined,
@@ -44,39 +45,8 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   ]);
   const [textMode, setTextMode] = useState<CanvasState["textMode"]>(false);
   const [dotMode, setDotMode] = useState<CanvasState["dotMode"]>(false);
-  const [texts, setTexts] = useState<CanvasState["texts"]>([]);
-  const [textSettings, setTextSettings] = useState<CanvasState["textSettings"]>(
-    {
-      fontSize: 75,
-      fontFamily: "Arial",
-      color: "#000000",
-      text: "",
-    },
-  );
-  const [selectedTextId, setSelectedTextId] =
-    useState<CanvasState["selectedTextId"]>(null);
-  const [standaloneDots, setStandaloneDots] = useState<
-    CanvasState["standaloneDots"]
-  >([]);
-  const [dotSettings, setDotSettings] = useState<CanvasState["dotSettings"]>({
-    size: 13,
-    color: "#000000",
-  });
-  const [selectedDotId, setSelectedDotId] =
-    useState<CanvasState["selectedDotId"]>(null);
   const [randomJitter, setRandomJitter] =
     useState<CanvasState["randomJitter"]>(false);
-
-
-  const [imageWorkingStates, setImageWorkingStates] = useState<
-    Map<
-      string,
-      {
-        texts: TextElement[];
-        standaloneDots: DotElement[];
-      }
-    >
-  >(new Map());
 
   const handleImagesUpload = useCallback(
     async (files: File[]) => {
@@ -90,8 +60,6 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
         );
 
         setImageHistory((prev) => [...prev, ...newImageData]);
-        setStandaloneDots([]);
-        setTexts([]);
 
         if (!activeImageId && newImageData.length > 0) {
           setActiveImageId(newImageData[0].id);
@@ -105,45 +73,20 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
 
   const handleImageSelect = useCallback(
     (imageId: string) => {
-
-      if (activeImageId && activeImageId !== imageId) {
-        setImageWorkingStates((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(activeImageId, {
-            texts: [...texts],
-            standaloneDots: [...standaloneDots],
-          });
-          return newMap;
-        });
-      }
-
-
       setActiveImageId(imageId);
       setEditIndex(-1);
       setArea(false);
       setPoints([]);
       setResults([{ cx: 0, cy: 0 }]);
-
-
-      setImageWorkingStates((prev) => {
-        const workingState = prev.get(imageId);
-        if (workingState) {
-          setTexts(workingState.texts);
-          setStandaloneDots(workingState.standaloneDots);
-        } else {
-
-          setTexts([]);
-          setStandaloneDots([]);
-        }
-        return prev;
-      });
-
-
-      setSelectedTextId(null);
-      setSelectedDotId(null);
     },
-    [activeImageId, texts, standaloneDots],
+    [],
   );
+
+  useEffect(() => {
+    return () => {
+      new ImageStorage().cleanup();
+    };
+  }, []);
 
   const updateActiveImageHistory = useCallback(
     (newHistory: PointsHistory[]) => {
@@ -158,106 +101,78 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     [activeImageId],
   );
 
-  const updateTextElement = useCallback(
-    (id: string, updates: Partial<TextElement>) => {
-      setTexts((prev) =>
-        prev.map((text) => (text.id === id ? { ...text, ...updates } : text)),
-      );
-    },
-    [],
+  const value = useMemo(
+    () => ({
+      imageHistory,
+      activeImageId,
+      area,
+      points,
+      side,
+      amount,
+      size,
+      padding,
+      gap,
+      rotation,
+      editIndex,
+      results,
+      textMode,
+      dotMode,
+      randomJitter,
+      setImageHistory,
+      setActiveImageId,
+      setArea,
+      setPoints,
+      setSide,
+      setAmount,
+      setSize,
+      setPadding,
+      setGap,
+      setRotation,
+      setEditIndex,
+      setResults,
+      setTextMode,
+      setDotMode,
+      setRandomJitter,
+      handleImagesUpload,
+      handleImageSelect,
+      updateActiveImageHistory,
+    }),
+    [
+      imageHistory,
+      activeImageId,
+      area,
+      points,
+      side,
+      amount,
+      size,
+      padding,
+      gap,
+      rotation,
+      editIndex,
+      results,
+      textMode,
+      dotMode,
+      randomJitter,
+      setImageHistory,
+      setActiveImageId,
+      setArea,
+      setPoints,
+      setSide,
+      setAmount,
+      setSize,
+      setPadding,
+      setGap,
+      setRotation,
+      setEditIndex,
+      setResults,
+      setTextMode,
+      setDotMode,
+      setRandomJitter,
+      handleImagesUpload,
+      handleImageSelect,
+      updateActiveImageHistory,
+    ],
   );
-
-  const deleteTextElement = useCallback(
-    (id: string) => {
-      setTexts((prev) => prev.filter((text) => text.id !== id));
-      if (selectedTextId === id) {
-        setSelectedTextId(null);
-      }
-    },
-    [selectedTextId],
-  );
-
-  const selectTextElement = useCallback((id: string) => {
-    setSelectedTextId(id);
-  }, []);
-
-  const updateDotElement = useCallback(
-    (id: string, updates: Partial<DotElement>) => {
-      setStandaloneDots((prev) =>
-        prev.map((dot) => (dot.id === id ? { ...dot, ...updates } : dot)),
-      );
-    },
-    [],
-  );
-
-  const deleteDotElement = useCallback(
-    (id: string) => {
-      setStandaloneDots((prev) => prev.filter((dot) => dot.id !== id));
-      if (selectedDotId === id) {
-        setSelectedDotId(null);
-      }
-    },
-    [selectedDotId],
-  );
-
-  const selectDotElement = useCallback((id: string) => {
-    setSelectedDotId(id);
-  }, []);
-
-  const value: TCanvasStateContext = {
-    imageHistory,
-    activeImageId,
-    area,
-    points,
-    side,
-    amount,
-    size,
-    padding,
-    gap,
-    rotation,
-    editIndex,
-    results,
-    textMode,
-    dotMode,
-    texts,
-    standaloneDots,
-    randomJitter,
-    textSettings,
-    dotSettings,
-    selectedTextId,
-    selectedDotId,
-    setImageHistory,
-    setActiveImageId,
-    setArea,
-    setPoints,
-    setSide,
-    setAmount,
-    setSize,
-    setPadding,
-    setGap,
-    setRotation,
-    setEditIndex,
-    setResults,
-    setTextMode,
-    setDotMode,
-    setTexts,
-    setStandaloneDots,
-    setRandomJitter,
-    setTextSettings,
-    setDotSettings,
-    setSelectedTextId,
-    setSelectedDotId,
-    updateTextElement,
-    updateDotElement,
-    deleteTextElement,
-    deleteDotElement,
-    selectTextElement,
-    selectDotElement,
-    handleImagesUpload,
-    handleImageSelect,
-    updateActiveImageHistory,
-    imageWorkingStates,
-  };
 
   return (
     <CanvasStateContext.Provider value={value}>
