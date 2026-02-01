@@ -1,4 +1,5 @@
 import { DotElement } from "@/types";
+import { memo } from "react";
 
 interface GeneratedDotsProps {
   dots: { cx: number; cy: number }[];
@@ -6,7 +7,7 @@ interface GeneratedDotsProps {
   fill?: string;
 }
 
-export function GeneratedDots({ dots, size, fill = "black" }: GeneratedDotsProps) {
+function GeneratedDots({ dots, size, fill = "black" }: GeneratedDotsProps) {
   return (
     <>
       {dots.map((dot, index) => (
@@ -30,7 +31,7 @@ interface StandaloneDotsProps {
   onDotClick?: (e: React.MouseEvent, dotId: string) => void;
 }
 
-export function StandaloneDots({
+function DotsRenderer({
   dots,
   isInteractive = false,
   selectedDotId,
@@ -115,7 +116,7 @@ interface HistoryDotsProps {
   fill?: string;
 }
 
-export function HistoryDots({ dots, size, fill = "black" }: HistoryDotsProps) {
+function HistoryDots({ dots, size, fill = "black" }: HistoryDotsProps) {
   return (
     <>
       {dots.map((dot, index) => (
@@ -130,3 +131,7 @@ export function HistoryDots({ dots, size, fill = "black" }: HistoryDotsProps) {
     </>
   );
 }
+
+export const DotRenderer = memo(DotsRenderer);
+export const GeneratedDot = memo(GeneratedDots);
+export const HistoryDot = memo(HistoryDots);

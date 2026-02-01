@@ -1,4 +1,5 @@
 import { TextElement } from "@/types";
+import { memo } from "react";
 
 interface TextsRendererProps {
   texts: TextElement[];
@@ -8,7 +9,7 @@ interface TextsRendererProps {
   onTextClick?: (e: React.MouseEvent, textId: string) => void;
 }
 
-export function TextsRenderer({
+function TextsRenderer({
   texts,
   isInteractive = false,
   selectedTextId,
@@ -20,7 +21,8 @@ export function TextsRenderer({
       {texts
         .filter((text) => text.visible !== false)
         .map((textElement) => {
-          const textWidth = textElement.text.length * textElement.fontSize * 0.6;
+          const textWidth =
+            textElement.text.length * textElement.fontSize * 0.6;
           const isSelected = selectedTextId === textElement.id;
 
           if (!isInteractive) {
@@ -103,7 +105,7 @@ interface HistoryTextsProps {
   texts: TextElement[];
 }
 
-export function HistoryTexts({ texts }: HistoryTextsProps) {
+function HistoryTexts({ texts }: HistoryTextsProps) {
   return (
     <>
       {texts
@@ -125,3 +127,6 @@ export function HistoryTexts({ texts }: HistoryTextsProps) {
     </>
   );
 }
+
+export const TextRenderer = memo(TextsRenderer);
+export const HistoryText = memo(HistoryTexts);

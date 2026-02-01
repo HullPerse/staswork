@@ -10,7 +10,7 @@ import {
   LassoSelect,
   Type,
 } from "lucide-react";
-import { lazy, Suspense, useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import ExportProgress from "./components/features/export.component";
 import Overlay from "./components/shared/overlay.component";
@@ -111,7 +111,10 @@ function App() {
     status: "processing",
   });
 
-  const activeImage = imageHistory.find((img) => img.id === activeImageId);
+  const activeImage = useMemo(() => {
+    return imageHistory.find((img) => img.id === activeImageId) || null;
+  }, [imageHistory, activeImageId]);
+
   const image = activeImage?.file || null;
 
   const handlePaste = async (e: React.ClipboardEvent) => {

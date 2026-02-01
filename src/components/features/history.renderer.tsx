@@ -1,6 +1,6 @@
 import { PointsHistory } from "@/types";
-import { HistoryDots, StandaloneDots } from "./dot.renderer";
-import { HistoryTexts } from "./text.renderer";
+import { HistoryDot, DotRenderer } from "./dot.renderer";
+import { HistoryText } from "./text.renderer";
 
 interface HistoryRendererProps {
   history: PointsHistory[];
@@ -14,11 +14,9 @@ export function HistoryRenderer({ history, editIndex }: HistoryRendererProps) {
         (item, historyIndex) =>
           historyIndex !== editIndex && (
             <g key={`history-${historyIndex}`}>
-              {item.visible && (
-                <HistoryDots dots={item.dots} size={item.size} />
-              )}
-              <HistoryTexts texts={item.texts || []} />
-              <StandaloneDots
+              {item.visible && <HistoryDot dots={item.dots} size={item.size} />}
+              <HistoryText texts={item.texts || []} />
+              <DotRenderer
                 dots={item.standaloneDots || []}
                 isInteractive={false}
               />
