@@ -15,7 +15,7 @@ export function useTextDrag(
       e.stopPropagation();
       setSelectedId(textId);
 
-      const svg = e.currentTarget.closest("svg");
+      const svg = (e.currentTarget as HTMLElement)?.closest("svg");
       if (!svg) return;
 
       const rect = svg.getBoundingClientRect();
@@ -82,7 +82,7 @@ export function useDotDrag(
       e.stopPropagation();
       setSelectedId(dotId);
 
-      const svg = e.currentTarget.closest("svg");
+      const svg = (e.currentTarget as HTMLElement)?.closest("svg");
       if (!svg) return;
 
       const rect = svg.getBoundingClientRect();

@@ -36,10 +36,10 @@ export default defineConfig(async () => ({
     sourcemap: false,
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "pdfjs-dist"],
+    include: ["react", "react-dom", "pdfjs-dist", "jszip"],
   },
   worker: {
-    format: "es"
+    format: "es",
   },
   resolve: {
     alias: {
