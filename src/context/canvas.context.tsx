@@ -12,6 +12,8 @@ import {
   CanvasStateContext as TCanvasStateContext,
   PointsHistory,
   ImageData,
+  TextElement,
+  DotElement,
 } from "@/types";
 import { createImageData } from "@/lib/utils";
 import ImageStorage from "@/service/image.service";
@@ -101,6 +103,34 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     [activeImageId],
   );
 
+  const updateActiveImageTexts = useCallback(
+    (newTexts: TextElement[]) => {
+      if (!activeImageId) return;
+
+      setImageHistory((prev) =>
+        prev.map((img) =>
+          img.id === activeImageId ? { ...img, currentTexts: newTexts } : img,
+        ),
+      );
+    },
+    [activeImageId],
+  );
+
+  const updateActiveImageDots = useCallback(
+    (newDots: DotElement[]) => {
+      if (!activeImageId) return;
+
+      setImageHistory((prev) =>
+        prev.map((img) =>
+          img.id === activeImageId
+            ? { ...img, currentStandaloneDots: newDots }
+            : img,
+        ),
+      );
+    },
+    [activeImageId],
+  );
+
   const value = useMemo(
     () => ({
       imageHistory,
@@ -136,6 +166,8 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       handleImagesUpload,
       handleImageSelect,
       updateActiveImageHistory,
+      updateActiveImageTexts,
+      updateActiveImageDots,
     }),
     [
       imageHistory,
@@ -171,6 +203,8 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       handleImagesUpload,
       handleImageSelect,
       updateActiveImageHistory,
+      updateActiveImageTexts,
+      updateActiveImageDots,
     ],
   );
 

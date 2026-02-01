@@ -26,8 +26,8 @@ export function getVisibleStandaloneDotsForImage(imageData: ImageData) {
 
 export async function processImageWithDots(
   imageData: ImageData,
-  currentTexts?: TextElement[],
-  currentStandaloneDots?: DotElement[],
+  _currentTexts?: TextElement[],
+  _currentStandaloneDots?: DotElement[],
 ): Promise<ProcessedImage> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
@@ -79,24 +79,26 @@ export async function processImageWithDots(
           });
         });
 
-        if (currentStandaloneDots && currentStandaloneDots.length > 0) {
-          currentStandaloneDots.forEach((dot) => {
-            if (dot.visible === false) return;
-            ctx.beginPath();
-            ctx.arc(dot.x, dot.y, dot.size / 2, 0, 2 * Math.PI);
-            ctx.fillStyle = dot.color;
-            ctx.fill();
-          });
-        }
-
-        if (currentTexts && currentTexts.length > 0) {
-          currentTexts.forEach((textElement) => {
+        const imageTexts = imageData.currentTexts || [];
+        if (imageTexts.length > 0) {
+          imageTexts.forEach((textElement) => {
             if (textElement.visible === false) return;
             ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
             ctx.fillStyle = textElement.color;
             ctx.textAlign = "left";
             ctx.textBaseline = "top";
             ctx.fillText(textElement.text, textElement.x, textElement.y);
+          });
+        }
+
+        const imageDots = imageData.currentStandaloneDots || [];
+        if (imageDots.length > 0) {
+          imageDots.forEach((dot) => {
+            if (dot.visible === false) return;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.size / 2, 0, 2 * Math.PI);
+            ctx.fillStyle = dot.color;
+            ctx.fill();
           });
         }
 

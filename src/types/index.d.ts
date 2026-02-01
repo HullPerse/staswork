@@ -52,6 +52,8 @@ export type ImageData = {
   };
   editHistory: PointsHistory[];
   name: string;
+  currentTexts: TextElement[];
+  currentStandaloneDots: DotElement[];
 };
 
 // Canvas context for rendered dots (not standalone ones)
@@ -92,6 +94,8 @@ export interface CanvasStateActions {
   handleImagesUpload: (files: File[]) => Promise<void>;
   handleImageSelect: (imageId: string) => void;
   updateActiveImageHistory: (newHistory: PointsHistory[]) => void;
+  updateActiveImageTexts: (texts: TextElement[]) => void;
+  updateActiveImageDots: (dots: DotElement[]) => void;
 }
 
 export type CanvasStateContext = CanvasState & CanvasStateActions;

@@ -229,7 +229,7 @@ export function getImageDimensions(
 export async function createImageData(file: File): Promise<ImageData> {
   const dataUrl = await fileToDataUrl(file);
   const dimensions = await getImageDimensions(file);
-  
+
   return {
     id: crypto.randomUUID(),
     file,
@@ -237,5 +237,7 @@ export async function createImageData(file: File): Promise<ImageData> {
     dimensions,
     editHistory: [],
     name: file.name,
+    currentTexts: [],
+    currentStandaloneDots: [],
   };
 }

@@ -10,7 +10,7 @@ import {
   LassoSelect,
   Type,
 } from "lucide-react";
-import { lazy, Suspense, useCallback, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import ExportProgress from "./components/features/export.component";
 import Overlay from "./components/shared/overlay.component";
@@ -41,12 +41,41 @@ function App() {
     textMode,
     setTextMode,
     setArea,
+    updateActiveImageTexts,
+    updateActiveImageDots,
   } = useCanvasState();
 
-  const { texts } = useTextState();
-  const { standaloneDots } = useDotState();
-  const { clearTexts } = useTextState();
-  const { clearDots } = useDotState();
+  const { texts, setTexts, clearTexts } = useTextState();
+  const { standaloneDots, setStandaloneDots, clearDots } = useDotState();
+
+  const isInitializingRef = useRef(false);
+
+  useEffect(() => {
+    if (!activeImageId) return;
+
+    const activeImage = imageHistory.find((img) => img.id === activeImageId);
+    if (!activeImage) return;
+
+    isInitializingRef.current = true;
+    setTexts(activeImage.currentTexts || []);
+    setStandaloneDots(activeImage.currentStandaloneDots || []);
+
+    setTimeout(() => {
+      isInitializingRef.current = false;
+    }, 100);
+  }, [activeImageId, imageHistory, setTexts, setStandaloneDots]);
+
+  useEffect(() => {
+    if (isInitializingRef.current || !activeImageId) return;
+
+    updateActiveImageTexts(texts);
+  }, [texts, updateActiveImageTexts, activeImageId]);
+
+  useEffect(() => {
+    if (isInitializingRef.current || !activeImageId) return;
+
+    updateActiveImageDots(standaloneDots);
+  }, [standaloneDots, updateActiveImageDots, activeImageId]);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -155,11 +184,7 @@ function App() {
           currentIndex: i + 1,
         }));
 
-        const processedImage = await processImageWithDots(
-          image,
-          texts,
-          standaloneDots,
-        );
+        const processedImage = await processImageWithDots(image);
         processedImages.push(processedImage);
       }
 
