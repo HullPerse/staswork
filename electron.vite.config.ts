@@ -26,8 +26,7 @@ export default defineConfig({
               if (id.includes("lucide-react")) return "icons";
               if (
                 id.includes("react-dropzone") ||
-                id.includes("react-zoom-pan-pinch") ||
-                id.includes("react-pdf")
+                id.includes("react-zoom-pan-pinch")
               )
                 return "media";
               if (id.includes("react-lasso-select")) return "selection";
