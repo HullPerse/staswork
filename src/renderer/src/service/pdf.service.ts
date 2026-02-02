@@ -1,7 +1,6 @@
-import * as pdfjsLib from "pdfjs-dist";
+import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 
-// Configure PDF.js worker (needed for Vite/Tauri)
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.mjs",
   import.meta.url,
 ).toString();
@@ -37,7 +36,7 @@ export class PDFService {
   ): Promise<ProcessedFile[]> {
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pdf = await getDocument({ data: arrayBuffer }).promise;
       const processedFiles: ProcessedFile[] = [];
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
@@ -62,7 +61,6 @@ export class PDFService {
 
         const imageUrl = canvas.toDataURL("image/png");
 
-        // Convert data URL to File
         const imageFile = await this.dataURLtoFile(
           imageUrl,
           `${file.name.replace(".pdf", "")}_page_${pageNum}.png`,
@@ -118,9 +116,8 @@ export class PDFService {
         return false;
       }
 
-      // Try to load the PDF document to validate it
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pdf = await getDocument({ data: arrayBuffer }).promise;
       return pdf.numPages > 0;
     } catch {
       return false;
@@ -130,14 +127,14 @@ export class PDFService {
   async getPDFInfo(file: File): Promise<{ pages: number; title?: string }> {
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pdf = await getDocument({ data: arrayBuffer }).promise;
 
       let title: string | undefined;
       try {
         const metadata = await pdf.getMetadata();
         title = (metadata.info as any)?.Title;
-      } catch {
-        // Ignore metadata errors
+      } catch (error) {
+        console.error(error);
       }
 
       return {
