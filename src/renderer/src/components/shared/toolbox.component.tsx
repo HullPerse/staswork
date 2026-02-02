@@ -1,19 +1,22 @@
-import { useCanvasState } from '@renderer/context/canvas.context'
+import { useCanvasState } from "@renderer/context/canvas.context";
 
-import { lazy } from 'react'
-import TextSettings from '../features/text.settings'
-import DotSettings from '../features/dot.settings'
-import CanvasSettings from '../features/canvas.settings'
+import TextSettings from "../features/text.settings";
+import DotSettings from "../features/dot.settings";
+import CanvasSettings from "../features/canvas.settings";
 
 export default function Toolbox() {
-  const { textMode, dotMode } = useCanvasState()
+  const { textMode, dotMode } = useCanvasState();
 
   const getSettings = () => {
-    if (textMode) return <TextSettings />
-    if (dotMode) return <DotSettings />
+    if (textMode) return <TextSettings />;
+    if (dotMode) return <DotSettings />;
 
-    return <CanvasSettings />
-  }
+    return <CanvasSettings />;
+  };
 
-  return <main className="flex flex-col max-w-90 w-100 h-full gap-2">{getSettings()}</main>
+  return (
+    <main className="flex flex-col max-w-90 w-100 h-full gap-2">
+      {getSettings()}
+    </main>
+  );
 }

@@ -30,7 +30,7 @@ import {
   createImageArchive,
   downloadArchive,
   processImageWithDots,
-  ProcessedImage,
+  type ProcessedImage,
 } from "./lib/export.utils";
 import { pdf, Document, Page, Image as PDFImage } from "@react-pdf/renderer";
 import { isPDFFile } from "./lib/pdf.utils";
@@ -216,7 +216,7 @@ function App() {
         status: "processing",
       });
 
-      const processedImages = [];
+      const processedImages: ProcessedImage[] = [];
 
       for (let i = 0; i < imageHistory.length; i++) {
         const image = imageHistory[i];
