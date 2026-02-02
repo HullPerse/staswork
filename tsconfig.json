@@ -1,4 +1,7 @@
 {
+  "files": [],
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }],
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -22,9 +25,7 @@
     "baseUrl": ".",
     "types": ["node"],
     "paths": {
-      "@/*": ["./src/*"],
+      "@renderer/*": ["./src/*"],
     },
-  },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }],
+  }
 }
