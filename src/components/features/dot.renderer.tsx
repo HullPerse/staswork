@@ -1,5 +1,5 @@
 import { DotElement } from "@/types";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 
 interface GeneratedDotsProps {
   dots: { cx: number; cy: number }[];
@@ -111,12 +111,39 @@ function DotsRenderer({
 }
 
 interface HistoryDotsProps {
-  dots: { cx: number; cy: number }[];
+  dots: {
+    cx: number;
+    cy: number;
+    hashFontSize?: number;
+    hashOffset?: number;
+    hashColor?: string;
+    hashPosition?:
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "right"
+      | "bottom-right"
+      | "bottom"
+      | "bottom-left"
+      | "left";
+  }[];
   size: number;
   fill?: string;
   hashEnabled?: boolean;
   hashFontSize?: number;
   hashOffset?: number;
+  hashColor?: string;
+  hashPosition?:
+    | "top"
+    | "top-left"
+    | "top-right"
+    | "right"
+    | "bottom-right"
+    | "bottom"
+    | "bottom-left"
+    | "left";
+  selectedDotIndex?: number | null;
+  onDotClick?: (index: number) => void;
 }
 
 function HistoryDots({
@@ -124,28 +151,122 @@ function HistoryDots({
   size,
   fill = "black",
   hashEnabled,
-  hashFontSize = 12,
-  hashOffset = 5,
+  hashFontSize: globalFontSize,
+  hashOffset: globalOffset,
+  hashColor: globalColor,
+  hashPosition: globalPosition,
+  selectedDotIndex,
+  onDotClick,
 }: HistoryDotsProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const getPosition = (
+    cx: number,
+    cy: number,
+    position: string,
+    offset: number,
+  ) => {
+    const r = size / 2;
+    switch (position) {
+      case "top":
+        return { x: cx, y: cy - r - offset };
+      case "top-left":
+        return { x: cx - r - offset, y: cy - r - offset };
+      case "top-right":
+        return { x: cx + r + offset, y: cy - r - offset };
+      case "right":
+        return { x: cx + r + offset, y: cy };
+      case "bottom-right":
+        return { x: cx + r + offset, y: cy + r + offset };
+      case "bottom":
+        return { x: cx, y: cy + r + offset };
+      case "bottom-left":
+        return { x: cx - r - offset, y: cy + r + offset };
+      case "left":
+        return { x: cx - r - offset, y: cy };
+      default:
+        return { x: cx, y: cy - r - offset };
+    }
+  };
+
   return (
     <>
-      {dots.map((dot, index) => (
-        <g key={`history-dot-${index}`}>
-          <circle cx={dot.cx} cy={dot.cy} r={size / 2} fill={fill} />
-          {hashEnabled && (
-            <text
-              x={dot.cx}
-              y={dot.cy - size / 2 - hashOffset}
-              textAnchor="middle"
-              fontSize={hashFontSize}
-              fill="black"
-              fontWeight="bold"
-            >
-              {index + 1}
-            </text>
-          )}
-        </g>
-      ))}
+      {dots.map((dot, index) => {
+        const fontSize = dot.hashFontSize ?? globalFontSize ?? 12;
+        const offset = dot.hashOffset ?? globalOffset ?? 5;
+        const color = dot.hashColor ?? globalColor ?? "black";
+        const position = dot.hashPosition ?? globalPosition ?? "top";
+        const isSelected = selectedDotIndex === index;
+        const isHovered = hoveredIndex === index;
+
+        const textPos = getPosition(dot.cx, dot.cy, position, offset);
+
+        return (
+          <g
+            key={`history-dot-${index}`}
+            onMouseEnter={() => hashEnabled && setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
+            {isHovered && hashEnabled && !isSelected && (
+              <circle
+                cx={dot.cx}
+                cy={dot.cy}
+                r={size / 2 + 4}
+                fill="rgba(255, 255, 255, 0.2)"
+                stroke="rgba(255, 255, 255, 0.6)"
+                strokeWidth="1.5"
+                style={{ pointerEvents: "none" }}
+              />
+            )}
+            {isSelected && (
+              <circle
+                cx={dot.cx}
+                cy={dot.cy}
+                r={size / 2 + 6}
+                fill="rgba(59, 130, 246, 0.15)"
+                stroke="rgb(59, 130, 246)"
+                strokeWidth="2"
+                strokeDasharray="4,2"
+                style={{ pointerEvents: "none" }}
+              />
+            )}
+            <circle
+              cx={dot.cx}
+              cy={dot.cy}
+              r={size / 2}
+              fill={fill}
+              style={{ cursor: hashEnabled ? "pointer" : "default" }}
+              onClick={() => onDotClick?.(index)}
+            />
+            {hashEnabled && (
+              <text
+                x={textPos.x}
+                y={textPos.y}
+                textAnchor={
+                  position.includes("left")
+                    ? "end"
+                    : position.includes("right")
+                      ? "start"
+                      : "middle"
+                }
+                dominantBaseline={
+                  position.includes("top")
+                    ? "auto"
+                    : position.includes("bottom")
+                      ? "hanging"
+                      : "middle"
+                }
+                fontSize={fontSize}
+                fill={color}
+                fontWeight="bold"
+                style={{ pointerEvents: "none" }}
+              >
+                {index + 1}
+              </text>
+            )}
+          </g>
+        );
+      })}
     </>
   );
 }

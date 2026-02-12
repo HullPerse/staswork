@@ -27,6 +27,18 @@ export type PointsHistory = {
   dots: {
     cx: number;
     cy: number;
+    hashFontSize?: number;
+    hashOffset?: number;
+    hashColor?: string;
+    hashPosition?:
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "right"
+      | "bottom-right"
+      | "bottom"
+      | "bottom-left"
+      | "left";
   }[];
   texts: TextElement[];
   standaloneDots: DotElement[];
@@ -42,6 +54,16 @@ export type PointsHistory = {
     hashEnabled?: boolean;
     hashFontSize?: number;
     hashOffset?: number;
+    hashColor?: string;
+    hashPosition?:
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "right"
+      | "bottom-right"
+      | "bottom"
+      | "bottom-left"
+      | "left";
   };
 };
 
@@ -81,6 +103,7 @@ export interface CanvasState {
   jitter: number;
   hashMode: boolean;
   hashLayerIndex: number | null;
+  hashDotIndex: number | null;
 }
 
 export interface CanvasStateActions {
@@ -107,6 +130,7 @@ export interface CanvasStateActions {
   updateActiveImageDots: (dots: DotElement[]) => void;
   setHashMode: (mode: boolean) => void;
   setHashLayerIndex: (index: number | null) => void;
+  setHashDotIndex: (index: number | null) => void;
 }
 
 export type CanvasStateContext = CanvasState & CanvasStateActions;

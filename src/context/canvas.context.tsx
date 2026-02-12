@@ -53,6 +53,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     useState<CanvasState["randomJitter"]>(false);
   const [hashMode, setHashMode] = useState<CanvasState["hashMode"]>(false);
   const [hashLayerIndex, setHashLayerIndex] = useState<number | null>(null);
+  const [hashDotIndex, setHashDotIndex] = useState<number | null>(null);
 
   const imageService = new ImageStorage();
 
@@ -183,6 +184,8 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       setHashMode,
       hashLayerIndex,
       setHashLayerIndex,
+      hashDotIndex,
+      setHashDotIndex,
     }),
     [
       imageHistory,
@@ -226,6 +229,8 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       setHashMode,
       hashLayerIndex,
       setHashLayerIndex,
+      hashDotIndex,
+      setHashDotIndex,
     ],
   );
 
