@@ -4,6 +4,7 @@ import {
   Dot,
   FileText,
   FolderArchive,
+  Hash,
   ImageMinus,
   ImagePlus,
   LassoSelect,
@@ -54,6 +55,8 @@ function App() {
     setArea,
     updateActiveImageTexts,
     updateActiveImageDots,
+    hashMode,
+    setHashMode,
   } = useCanvasState();
 
   const { texts, setTexts, clearTexts } = useTextState();
@@ -349,10 +352,11 @@ function App() {
           )}
           <Button
             className="w-16 h-16 bg-green-500/20 border-green-500 hover:bg-green-500/60"
-            disabled={!image || (!textMode && !dotMode)}
+            disabled={!image || (!textMode && !dotMode && !hashMode)}
             onClick={() => {
               setTextMode(false);
               setDotMode(false);
+              setHashMode(false);
               setArea(false);
             }}
           >
@@ -379,6 +383,18 @@ function App() {
             }}
           >
             <Dot className="size-10" />
+          </Button>
+          <Button
+            className="w-16 h-16 bg-green-500/20 border-green-500 hover:bg-green-500/60"
+            disabled={!image || hashMode}
+            onClick={() => {
+              setHashMode(true);
+              setDotMode(false);
+              setTextMode(false);
+              setArea(false);
+            }}
+          >
+            <Hash className="size-10" />
           </Button>
         </div>
         <div className="flex flex-row gap-2">

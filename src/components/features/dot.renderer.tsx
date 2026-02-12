@@ -114,19 +114,37 @@ interface HistoryDotsProps {
   dots: { cx: number; cy: number }[];
   size: number;
   fill?: string;
+  hashEnabled?: boolean;
+  hashFontSize?: number;
+  hashOffset?: number;
 }
 
-function HistoryDots({ dots, size, fill = "black" }: HistoryDotsProps) {
+function HistoryDots({
+  dots,
+  size,
+  fill = "black",
+  hashEnabled,
+  hashFontSize = 12,
+  hashOffset = 5,
+}: HistoryDotsProps) {
   return (
     <>
       {dots.map((dot, index) => (
-        <circle
-          key={`history-dot-${index}`}
-          cx={dot.cx}
-          cy={dot.cy}
-          r={size / 2}
-          fill={fill}
-        />
+        <g key={`history-dot-${index}`}>
+          <circle cx={dot.cx} cy={dot.cy} r={size / 2} fill={fill} />
+          {hashEnabled && (
+            <text
+              x={dot.cx}
+              y={dot.cy - size / 2 - hashOffset}
+              textAnchor="middle"
+              fontSize={hashFontSize}
+              fill="black"
+              fontWeight="bold"
+            >
+              {index + 1}
+            </text>
+          )}
+        </g>
       ))}
     </>
   );

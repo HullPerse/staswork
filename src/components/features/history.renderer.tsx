@@ -14,7 +14,15 @@ export function HistoryRenderer({ history, editIndex }: HistoryRendererProps) {
         (item, historyIndex) =>
           historyIndex !== editIndex && (
             <g key={`history-${historyIndex}`}>
-              {item.visible && <HistoryDot dots={item.dots} size={item.size} />}
+              {item.visible && (
+                <HistoryDot
+                  dots={item.dots}
+                  size={item.size}
+                  hashEnabled={item.settings.hashEnabled}
+                  hashFontSize={item.settings.hashFontSize}
+                  hashOffset={item.settings.hashOffset}
+                />
+              )}
               <HistoryText texts={item.texts || []} />
               <DotRenderer
                 dots={item.standaloneDots || []}

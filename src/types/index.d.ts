@@ -39,6 +39,9 @@ export type PointsHistory = {
     gap: number;
     padding: number;
     rotation: number;
+    hashEnabled?: boolean;
+    hashFontSize?: number;
+    hashOffset?: number;
   };
 };
 
@@ -76,6 +79,8 @@ export interface CanvasState {
   textMode: boolean;
   randomJitter: boolean;
   jitter: number;
+  hashMode: boolean;
+  hashLayerIndex: number | null;
 }
 
 export interface CanvasStateActions {
@@ -100,6 +105,8 @@ export interface CanvasStateActions {
   updateActiveImageHistory: (newHistory: PointsHistory[]) => void;
   updateActiveImageTexts: (texts: TextElement[]) => void;
   updateActiveImageDots: (dots: DotElement[]) => void;
+  setHashMode: (mode: boolean) => void;
+  setHashLayerIndex: (index: number | null) => void;
 }
 
 export type CanvasStateContext = CanvasState & CanvasStateActions;
