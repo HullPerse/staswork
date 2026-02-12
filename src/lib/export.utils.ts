@@ -52,12 +52,75 @@ export async function processImageWithDots(
           if (!historyItem.visible) return;
 
           const dotRadius = historyItem.size / 2;
+          const hashEnabled = historyItem.settings.hashEnabled;
+          const hashFontSize = historyItem.settings.hashFontSize || 12;
+          const hashOffset = historyItem.settings.hashOffset || 5;
+          const hashColor = historyItem.settings.hashColor || "black";
+          const hashPosition = historyItem.settings.hashPosition || "top";
 
-          historyItem.dots.forEach((dot) => {
+          const getHashPosition = (
+            cx: number,
+            cy: number,
+            position: string,
+            offset: number,
+          ) => {
+            switch (position) {
+              case "top":
+                return { x: cx, y: cy - dotRadius - offset, align: "center" };
+              case "top-left":
+                return {
+                  x: cx - dotRadius - offset,
+                  y: cy - dotRadius - offset,
+                  align: "right",
+                };
+              case "top-right":
+                return {
+                  x: cx + dotRadius + offset,
+                  y: cy - dotRadius - offset,
+                  align: "left",
+                };
+              case "right":
+                return { x: cx + dotRadius + offset, y: cy, align: "left" };
+              case "bottom-right":
+                return {
+                  x: cx + dotRadius + offset,
+                  y: cy + dotRadius + offset,
+                  align: "left",
+                };
+              case "bottom":
+                return { x: cx, y: cy + dotRadius + offset, align: "center" };
+              case "bottom-left":
+                return {
+                  x: cx - dotRadius - offset,
+                  y: cy + dotRadius + offset,
+                  align: "right",
+                };
+              case "left":
+                return { x: cx - dotRadius - offset, y: cy, align: "right" };
+              default:
+                return { x: cx, y: cy - dotRadius - offset, align: "center" };
+            }
+          };
+
+          historyItem.dots.forEach((dot, dotIndex) => {
             ctx.beginPath();
             ctx.arc(dot.cx, dot.cy, dotRadius, 0, 2 * Math.PI);
             ctx.fillStyle = "black";
             ctx.fill();
+
+            if (hashEnabled) {
+              const fontSize = dot.hashFontSize ?? hashFontSize;
+              const offset = dot.hashOffset ?? hashOffset;
+              const color = dot.hashColor ?? hashColor;
+              const position = dot.hashPosition ?? hashPosition;
+
+              const pos = getHashPosition(dot.cx, dot.cy, position, offset);
+              ctx.font = `bold ${fontSize}px sans-serif`;
+              ctx.fillStyle = color;
+              ctx.textAlign = pos.align as CanvasTextAlign;
+              ctx.textBaseline = "alphabetic";
+              ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
+            }
           });
 
           const texts = historyItem.texts || [];
