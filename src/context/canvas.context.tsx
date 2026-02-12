@@ -42,6 +42,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   const [padding, setPadding] = useState<CanvasState["padding"]>(0);
   const [gap, setGap] = useState<CanvasState["gap"]>(10);
   const [rotation, setRotation] = useState<CanvasState["rotation"]>(0);
+  const [jitter, setJitter] = useState<CanvasState["jitter"]>(0);
   const [editIndex, setEditIndex] = useState<CanvasState["editIndex"]>(-1);
   const [results, setResults] = useState<CanvasState["results"]>([
     { cx: 0, cy: 0 },
@@ -174,6 +175,8 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       updateActiveImageHistory,
       updateActiveImageTexts,
       updateActiveImageDots,
+      jitter,
+      setJitter,
     }),
     [
       imageHistory,
@@ -211,6 +214,8 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       updateActiveImageHistory,
       updateActiveImageTexts,
       updateActiveImageDots,
+      jitter,
+      setJitter,
     ],
   );
 

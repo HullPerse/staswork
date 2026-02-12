@@ -384,6 +384,7 @@ function App() {
         <div className="flex flex-row gap-2">
           <Button
             className="w-16 h-16"
+            title="Сохранить в PDF"
             disabled={!image}
             onClick={handleDownloadPdf}
           >
@@ -391,6 +392,7 @@ function App() {
           </Button>
           <Button
             className="w-16 h-16"
+            title="Сохранить в архиве"
             onClick={handleDownload}
             disabled={!image}
           >

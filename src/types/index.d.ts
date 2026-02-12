@@ -75,6 +75,7 @@ export interface CanvasState {
   dotMode: boolean;
   textMode: boolean;
   randomJitter: boolean;
+  jitter: number;
 }
 
 export interface CanvasStateActions {
@@ -83,6 +84,7 @@ export interface CanvasStateActions {
   setArea: (area: boolean) => void;
   setPoints: (points: Points[]) => void;
   setSide: (side: "left" | "right") => void;
+  setJitter: (jitter: number) => void;
   setAmount: (amount: string) => void;
   setSize: (size: number) => void;
   setPadding: (padding: number) => void;

@@ -23,6 +23,8 @@ export default function CanvasSettings() {
     setSize,
     gap,
     setGap,
+    jitter,
+    setJitter,
     padding,
     setPadding,
     rotation,
@@ -57,7 +59,6 @@ export default function CanvasSettings() {
         <Input
           type="text"
           placeholder="Количество точек"
-          className=""
           value={amount}
           onChange={(e) => {
             const value = e.target.value;
@@ -80,9 +81,8 @@ export default function CanvasSettings() {
           </div>
           <Slider
             min={1}
-            max={30}
+            max={100}
             step={1}
-            className=""
             value={size}
             onValueChange={(e) => setSize(e as number)}
             disabled={disabled}
@@ -101,9 +101,8 @@ export default function CanvasSettings() {
           </div>
           <Slider
             min={1}
-            max={100}
+            max={200}
             step={1}
-            className=""
             value={gap}
             onValueChange={(e) => setGap(e as number)}
             disabled={disabled}
@@ -122,9 +121,8 @@ export default function CanvasSettings() {
           </div>
           <Slider
             min={1}
-            max={100}
+            max={200}
             step={1}
-            className=""
             value={padding}
             onValueChange={(e) => setPadding(e as number)}
             disabled={disabled}
@@ -145,7 +143,6 @@ export default function CanvasSettings() {
             min={0}
             max={360}
             step={1}
-            className=""
             value={rotation}
             onValueChange={(e) => setRotation(e as number)}
             disabled={disabled}
@@ -166,6 +163,14 @@ export default function CanvasSettings() {
               disabled={disabled}
             />
           </div>
+          <Slider
+            min={0}
+            max={20}
+            step={1}
+            value={jitter}
+            onValueChange={(e) => setJitter(e as number)}
+            disabled={disabled}
+          />
         </>
 
         {/* info box */}

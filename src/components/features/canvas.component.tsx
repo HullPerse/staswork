@@ -27,6 +27,7 @@ function ImageCanvas() {
     textMode,
     dotMode,
     randomJitter,
+    jitter,
   } = useCanvasState();
 
   const { texts, selectedTextId, updateTextElement, deleteTextElement } =
@@ -92,8 +93,8 @@ function ImageCanvas() {
           });
 
           if (edgeDistances || padding === 0) {
-            const jitterX = randomJitter ? Math.random() * 4 : 0;
-            const jitterY = randomJitter ? Math.random() * 4 : 0;
+            const jitterX = randomJitter ? Math.random() * jitter : 0;
+            const jitterY = randomJitter ? Math.random() * jitter : 0;
             result.push({ cx: worldX + jitterX, cy: worldY + jitterY });
             count++;
           }
@@ -111,6 +112,7 @@ function ImageCanvas() {
     padding,
     rotation,
     randomJitter,
+    jitter,
   ]);
 
   const setResultsRef = useRef(setResults);

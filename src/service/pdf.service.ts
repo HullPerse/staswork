@@ -32,7 +32,7 @@ export class PDFService {
 
   async convertPDFToImages(
     file: File,
-    scale: number = 2.0,
+    scale: number = 1.0,
   ): Promise<ProcessedFile[]> {
     try {
       const arrayBuffer = await file.arrayBuffer();
