@@ -368,6 +368,7 @@ function App() {
             onClick={() => {
               setTextMode(true);
               setDotMode(false);
+              setHashMode(false);
               setArea(false);
             }}
           >
@@ -378,6 +379,7 @@ function App() {
             disabled={!image || dotMode}
             onClick={() => {
               setDotMode(true);
+              setHashMode(false);
               setTextMode(false);
               setArea(false);
             }}
