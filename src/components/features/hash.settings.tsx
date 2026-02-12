@@ -1,9 +1,90 @@
 import { useState, useEffect } from "react";
+import { List, type RowComponentProps } from "react-window";
 import { useCanvasState } from "@/context/canvas.context";
 import { Switch } from "../ui/switch.component";
 import { Slider } from "../ui/slider.component";
 import { Button } from "../ui/button.component";
 import { Hash, Trash } from "lucide-react";
+
+interface DotRowProps {
+  dots: Array<{
+    hashFontSize?: number;
+    hashOffset?: number;
+    hashColor?: string;
+  }>;
+  settings: {
+    hashColor?: string;
+    hashFontSize?: number;
+  };
+  localSelectedDotIndex: number | null;
+  onSelect: (index: number) => void;
+  onRemove: (index: number) => void;
+}
+
+function DotRow({
+  index,
+  style,
+  dots,
+  settings,
+  localSelectedDotIndex,
+  onSelect,
+  onRemove,
+}: RowComponentProps<DotRowProps>) {
+  const dot = dots[index];
+  const hasCustomSettings =
+    dot.hashFontSize !== undefined ||
+    dot.hashOffset !== undefined ||
+    dot.hashColor !== undefined;
+  const isSelected = localSelectedDotIndex === index;
+
+  return (
+    <section
+      style={style}
+      onClick={() => onSelect(index)}
+      className={`flex flex-row w-full h-10 min-h-10 max-h-10 border rounded cursor-pointer ${
+        isSelected
+          ? "border-primary bg-accent"
+          : hasCustomSettings
+            ? "border-yellow-500/50 bg-yellow-500/10"
+            : "hover:bg-accent/50"
+      }`}
+    >
+      <span className="font-bold border-r h-full items-center flex px-2">
+        #{index + 1}
+      </span>
+      <span className="flex items-center justify-center px-2 text-xs text-muted-foreground">
+        {hasCustomSettings ? (
+          <span className="flex items-center gap-1">
+            <span
+              className="w-3 h-3 rounded-full border"
+              style={{
+                backgroundColor:
+                  dot.hashColor || settings.hashColor || "#000000",
+              }}
+            />
+            {dot.hashFontSize || settings.hashFontSize || 12}
+            px
+          </span>
+        ) : (
+          <Hash className="w-3 h-3" />
+        )}
+      </span>
+      <div className="flex flex-row ml-auto p-1 h-full items-center justify-center gap-1">
+        {hasCustomSettings && (
+          <button
+            className="cursor-pointer p-1 hover:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(index);
+            }}
+          >
+            <Trash className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
 
 export default function HashSettings() {
   const {
@@ -380,66 +461,20 @@ export default function HashSettings() {
       {hashEnabled && currentLayer && (
         <div className="flex flex-col gap-1 h-full overflow-y-auto pb-10">
           <span className="text-text text-sm font-medium shrink-0">Точки:</span>
-          <div className="flex flex-col gap-1 overflow-y-auto flex-1">
-            {currentLayer.dots.map((dot, dotIndex) => {
-              const hasCustomSettings =
-                dot.hashFontSize !== undefined ||
-                dot.hashOffset !== undefined ||
-                dot.hashColor !== undefined;
-              const isSelected = localSelectedDotIndex === dotIndex;
-
-              return (
-                <section
-                  key={dotIndex}
-                  onClick={() => handleDotSelect(dotIndex)}
-                  className={`flex flex-row w-full h-10 min-h-10 border rounded cursor-pointer ${
-                    isSelected
-                      ? "border-primary bg-accent"
-                      : hasCustomSettings
-                        ? "border-yellow-500/50 bg-yellow-500/10"
-                        : "hover:bg-accent/50"
-                  }`}
-                >
-                  <span className="font-bold border-r h-full items-center flex px-2">
-                    #{dotIndex + 1}
-                  </span>
-                  <span className="flex items-center justify-center px-2 text-xs text-muted-foreground">
-                    {hasCustomSettings ? (
-                      <span className="flex items-center gap-1">
-                        <span
-                          className="w-3 h-3 rounded-full border"
-                          style={{
-                            backgroundColor:
-                              dot.hashColor ||
-                              currentLayer.settings.hashColor ||
-                              "#000000",
-                          }}
-                        />
-                        {dot.hashFontSize ||
-                          currentLayer.settings.hashFontSize ||
-                          12}
-                        px
-                      </span>
-                    ) : (
-                      <Hash className="w-3 h-3" />
-                    )}
-                  </span>
-                  <div className="flex flex-row ml-auto p-1 h-full items-center justify-center gap-1">
-                    {hasCustomSettings && (
-                      <button
-                        className="cursor-pointer p-1 hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeDotHash(dotIndex);
-                        }}
-                      >
-                        <Trash className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                </section>
-              );
-            })}
+          <div className="flex flex-col gap-1 flex-1">
+            <List
+              rowComponent={DotRow}
+              rowProps={{
+                dots: currentLayer.dots,
+                settings: currentLayer.settings,
+                localSelectedDotIndex,
+                onSelect: handleDotSelect,
+                onRemove: removeDotHash,
+              }}
+              rowCount={currentLayer.dots.length}
+              rowHeight={45}
+              style={{ height: "100%" }}
+            />
           </div>
         </div>
       )}
