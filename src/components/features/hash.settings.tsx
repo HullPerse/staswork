@@ -403,7 +403,7 @@ export default function HashSettings() {
         </div>
         <Slider
           min={8}
-          max={32}
+          max={100}
           step={1}
           value={hashFontSize}
           onValueChange={(val) => handleFontSizeChange(val as number)}
