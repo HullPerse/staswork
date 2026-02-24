@@ -42,6 +42,7 @@ interface StandaloneDotsProps {
     | "bottom"
     | "bottom-left"
     | "left";
+  hashStartIndex?: number;
 }
 
 function DotsRenderer({
@@ -55,6 +56,7 @@ function DotsRenderer({
   hashOffset,
   hashColor,
   hashPosition,
+  hashStartIndex,
 }: StandaloneDotsProps) {
   const getPosition = (
     x: number,
@@ -148,7 +150,7 @@ function DotsRenderer({
                   fontWeight="bold"
                   style={{ pointerEvents: "none" }}
                 >
-                  {index + 1}
+                  {(hashStartIndex ?? 0) + index + 1}
                 </text>
               </g>
             );
@@ -222,7 +224,7 @@ function DotsRenderer({
                   fontWeight="bold"
                   style={{ pointerEvents: "none" }}
                 >
-                  {index + 1}
+                  {(hashStartIndex ?? 0) + index + 1}
                 </text>
               )}
             </g>
@@ -266,6 +268,7 @@ interface HistoryDotsProps {
     | "left";
   selectedDotIndex?: number | null;
   onDotClick?: (index: number) => void;
+  hashStartIndex?: number;
 }
 
 function HistoryDots({
@@ -279,6 +282,7 @@ function HistoryDots({
   hashPosition: globalPosition,
   selectedDotIndex,
   onDotClick,
+  hashStartIndex,
 }: HistoryDotsProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -383,7 +387,7 @@ function HistoryDots({
                 fontWeight="bold"
                 style={{ pointerEvents: "none" }}
               >
-                {index + 1}
+                {(hashStartIndex ?? 0) + index + 1}
               </text>
             )}
           </g>
