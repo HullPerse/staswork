@@ -21,6 +21,18 @@ export type DotElement = {
   size: number;
   color: string;
   visible: boolean;
+  hashFontSize?: number;
+  hashOffset?: number;
+  hashColor?: string;
+  hashPosition?:
+    | "top"
+    | "top-left"
+    | "top-right"
+    | "right"
+    | "bottom-right"
+    | "bottom"
+    | "bottom-left"
+    | "left";
 };
 
 export type PointsHistory = {
@@ -104,6 +116,21 @@ export interface CanvasState {
   hashMode: boolean;
   hashLayerIndex: number | null;
   hashDotIndex: number | null;
+  hashStandaloneDotsEnabled: boolean;
+  hashStandaloneDotsSettings: {
+    hashFontSize: number;
+    hashOffset: number;
+    hashColor: string;
+    hashPosition:
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "right"
+      | "bottom-right"
+      | "bottom"
+      | "bottom-left"
+      | "left";
+  };
 }
 
 export interface CanvasStateActions {
@@ -131,6 +158,21 @@ export interface CanvasStateActions {
   setHashMode: (mode: boolean) => void;
   setHashLayerIndex: (index: number | null) => void;
   setHashDotIndex: (index: number | null) => void;
+  setHashStandaloneDotsEnabled: (enabled: boolean) => void;
+  setHashStandaloneDotsSettings: (settings: {
+    hashFontSize: number;
+    hashOffset: number;
+    hashColor: string;
+    hashPosition:
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "right"
+      | "bottom-right"
+      | "bottom"
+      | "bottom-left"
+      | "left";
+  }) => void;
 }
 
 export type CanvasStateContext = CanvasState & CanvasStateActions;

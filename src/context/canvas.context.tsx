@@ -54,6 +54,27 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   const [hashMode, setHashMode] = useState<CanvasState["hashMode"]>(false);
   const [hashLayerIndex, setHashLayerIndex] = useState<number | null>(null);
   const [hashDotIndex, setHashDotIndex] = useState<number | null>(null);
+  const [hashStandaloneDotsEnabled, setHashStandaloneDotsEnabled] =
+    useState<boolean>(false);
+  const [hashStandaloneDotsSettings, setHashStandaloneDotsSettings] = useState<{
+    hashFontSize: number;
+    hashOffset: number;
+    hashColor: string;
+    hashPosition:
+      | "top"
+      | "top-left"
+      | "top-right"
+      | "right"
+      | "bottom-right"
+      | "bottom"
+      | "bottom-left"
+      | "left";
+  }>({
+    hashFontSize: 12,
+    hashOffset: 5,
+    hashColor: "#000000",
+    hashPosition: "top",
+  });
 
   const imageService = new ImageStorage();
 
@@ -186,6 +207,10 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       setHashLayerIndex,
       hashDotIndex,
       setHashDotIndex,
+      hashStandaloneDotsEnabled,
+      setHashStandaloneDotsEnabled,
+      hashStandaloneDotsSettings,
+      setHashStandaloneDotsSettings,
     }),
     [
       imageHistory,
@@ -231,6 +256,10 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       setHashLayerIndex,
       hashDotIndex,
       setHashDotIndex,
+      hashStandaloneDotsEnabled,
+      setHashStandaloneDotsEnabled,
+      hashStandaloneDotsSettings,
+      setHashStandaloneDotsSettings,
     ],
   );
 

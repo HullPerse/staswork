@@ -29,6 +29,19 @@ interface StandaloneDotsProps {
   selectedDotId?: string | null;
   onDotMouseDown?: (e: React.MouseEvent, dotId: string) => void;
   onDotClick?: (e: React.MouseEvent, dotId: string) => void;
+  hashEnabled?: boolean;
+  hashFontSize?: number;
+  hashOffset?: number;
+  hashColor?: string;
+  hashPosition?:
+    | "top"
+    | "top-left"
+    | "top-right"
+    | "right"
+    | "bottom-right"
+    | "bottom"
+    | "bottom-left"
+    | "left";
 }
 
 function DotsRenderer({
@@ -37,15 +50,60 @@ function DotsRenderer({
   selectedDotId,
   onDotMouseDown,
   onDotClick,
+  hashEnabled,
+  hashFontSize,
+  hashOffset,
+  hashColor,
+  hashPosition,
 }: StandaloneDotsProps) {
+  const getPosition = (
+    x: number,
+    y: number,
+    position: string,
+    offset: number,
+  ) => {
+    const r = 0;
+    switch (position) {
+      case "top":
+        return { x, y: y - r - offset };
+      case "top-left":
+        return { x: x - r - offset, y: y - r - offset };
+      case "top-right":
+        return { x: x + r + offset, y: y - r - offset };
+      case "right":
+        return { x: x + r + offset, y };
+      case "bottom-right":
+        return { x: x + r + offset, y: y + r + offset };
+      case "bottom":
+        return { x, y: y + r + offset };
+      case "bottom-left":
+        return { x: x - r - offset, y: y + r + offset };
+      case "left":
+        return { x: x - r - offset, y };
+      default:
+        return { x, y: y - r - offset };
+    }
+  };
+
   return (
     <>
       {dots
         .filter((dot) => dot.visible)
-        .map((dotElement) => {
+        .map((dotElement, index) => {
           const isSelected = selectedDotId === dotElement.id;
 
-          if (!isInteractive) {
+          const fontSize = dotElement.hashFontSize ?? hashFontSize ?? 12;
+          const offset = dotElement.hashOffset ?? hashOffset ?? 5;
+          const color = dotElement.hashColor ?? hashColor ?? "black";
+          const position = dotElement.hashPosition ?? hashPosition ?? "top";
+          const textPos = getPosition(
+            dotElement.x,
+            dotElement.y,
+            position,
+            offset,
+          );
+
+          if (!isInteractive && !hashEnabled) {
             return (
               <circle
                 key={dotElement.id}
@@ -55,6 +113,44 @@ function DotsRenderer({
                 fill={dotElement.color}
                 style={{ pointerEvents: "none" }}
               />
+            );
+          }
+
+          if (!isInteractive && hashEnabled) {
+            return (
+              <g key={dotElement.id}>
+                <circle
+                  cx={dotElement.x}
+                  cy={dotElement.y}
+                  r={dotElement.size / 2}
+                  fill={dotElement.color}
+                  style={{ pointerEvents: "none" }}
+                />
+                <text
+                  x={textPos.x}
+                  y={textPos.y}
+                  textAnchor={
+                    position.includes("left")
+                      ? "end"
+                      : position.includes("right")
+                        ? "start"
+                        : "middle"
+                  }
+                  dominantBaseline={
+                    position.includes("top")
+                      ? "auto"
+                      : position.includes("bottom")
+                        ? "hanging"
+                        : "middle"
+                  }
+                  fontSize={fontSize}
+                  fill={color}
+                  fontWeight="bold"
+                  style={{ pointerEvents: "none" }}
+                >
+                  {index + 1}
+                </text>
+              </g>
             );
           }
 
@@ -103,6 +199,32 @@ function DotsRenderer({
                 }}
                 onClick={(e) => onDotClick?.(e as any, dotElement.id)}
               />
+              {hashEnabled && (
+                <text
+                  x={textPos.x}
+                  y={textPos.y}
+                  textAnchor={
+                    position.includes("left")
+                      ? "end"
+                      : position.includes("right")
+                        ? "start"
+                        : "middle"
+                  }
+                  dominantBaseline={
+                    position.includes("top")
+                      ? "auto"
+                      : position.includes("bottom")
+                        ? "hanging"
+                        : "middle"
+                  }
+                  fontSize={fontSize}
+                  fill={color}
+                  fontWeight="bold"
+                  style={{ pointerEvents: "none" }}
+                >
+                  {index + 1}
+                </text>
+              )}
             </g>
           );
         })}

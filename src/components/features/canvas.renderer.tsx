@@ -47,6 +47,8 @@ export default function ModeRenderer({
     editIndex,
     textMode,
     dotMode,
+    hashStandaloneDotsEnabled,
+    hashStandaloneDotsSettings,
   } = useCanvasState();
 
   const handleLassoChange = useCallback(
@@ -201,6 +203,11 @@ export default function ModeRenderer({
             selectedDotId={selectedDotId}
             onDotMouseDown={handleDotMouseDown}
             onDotClick={handleDotClick}
+            hashEnabled={hashStandaloneDotsEnabled}
+            hashFontSize={hashStandaloneDotsSettings.hashFontSize}
+            hashOffset={hashStandaloneDotsSettings.hashOffset}
+            hashColor={hashStandaloneDotsSettings.hashColor}
+            hashPosition={hashStandaloneDotsSettings.hashPosition}
           />
           <TextRenderer
             texts={texts}
@@ -234,6 +241,11 @@ export default function ModeRenderer({
           selectedDotId={selectedDotId}
           onDotMouseDown={handleDotMouseDown}
           onDotClick={handleDotClick}
+          hashEnabled={hashStandaloneDotsEnabled}
+          hashFontSize={hashStandaloneDotsSettings.hashFontSize}
+          hashOffset={hashStandaloneDotsSettings.hashOffset}
+          hashColor={hashStandaloneDotsSettings.hashColor}
+          hashPosition={hashStandaloneDotsSettings.hashPosition}
         />
         <TextRenderer texts={texts} isInteractive={false} />
         <GeneratedDot dots={dots} size={size} />
@@ -262,7 +274,15 @@ export default function ModeRenderer({
           onTextMouseDown={handleTextMouseDown}
           onTextClick={handleTextClick}
         />
-        <DotRenderer dots={standaloneDots} isInteractive={false} />
+        <DotRenderer
+          dots={standaloneDots}
+          isInteractive={false}
+          hashEnabled={hashStandaloneDotsEnabled}
+          hashFontSize={hashStandaloneDotsSettings.hashFontSize}
+          hashOffset={hashStandaloneDotsSettings.hashOffset}
+          hashColor={hashStandaloneDotsSettings.hashColor}
+          hashPosition={hashStandaloneDotsSettings.hashPosition}
+        />
         <GeneratedDot dots={dots} size={size} />
       </SvgOverlay>
     </div>
@@ -290,7 +310,15 @@ export default function ModeRenderer({
           onTextMouseDown={handleTextMouseDown}
           onTextClick={handleTextClick}
         />
-        <DotRenderer dots={standaloneDots} isInteractive={false} />
+        <DotRenderer
+          dots={standaloneDots}
+          isInteractive={false}
+          hashEnabled={hashStandaloneDotsEnabled}
+          hashFontSize={hashStandaloneDotsSettings.hashFontSize}
+          hashOffset={hashStandaloneDotsSettings.hashOffset}
+          hashColor={hashStandaloneDotsSettings.hashColor}
+          hashPosition={hashStandaloneDotsSettings.hashPosition}
+        />
         <GeneratedDot dots={dots} size={size} />
       </SvgOverlay>
     </div>
