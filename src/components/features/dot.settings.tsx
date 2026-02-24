@@ -117,7 +117,7 @@ export default function DotSettings() {
       </div>
 
       {/* Dot layers list */}
-      <div className="flex flex-col h-full overflow-y-auto">
+      <div className="flex flex-col h-full overflow-y-auto pb-10">
         {allDots.length > 0 && (
           <div className="flex flex-col gap-2 mt-4">
             <span className="font-medium">Слои:</span>
