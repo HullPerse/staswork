@@ -231,7 +231,7 @@ function App() {
 
         const processedImage = await processImageWithDots(
           image,
-          undefined,
+          texts,
           undefined,
           hashStandaloneDotsEnabled,
           hashStandaloneDotsSettings,
@@ -280,7 +280,7 @@ function App() {
 
         const processedImage = await processImageWithDots(
           image,
-          undefined,
+          texts,
           undefined,
           hashStandaloneDotsEnabled,
           hashStandaloneDotsSettings,
@@ -313,10 +313,15 @@ function App() {
       setExportState((prev) => ({ ...prev, status: "downloading" }));
       const blob = await pdf(<MyDocument />).toBlob();
 
+      const firstImage = processedImages[0];
+      const pdfFileName = firstImage?.name
+        ? firstImage.name.replace(".png", ".pdf")
+        : "Результат.pdf";
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "Результат.pdf";
+      a.download = pdfFileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

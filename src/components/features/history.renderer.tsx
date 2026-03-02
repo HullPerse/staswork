@@ -6,9 +6,14 @@ import { useCanvasState } from "@/context/canvas.context";
 interface HistoryRendererProps {
   history: PointsHistory[];
   editIndex: number;
+  showTexts?: boolean;
 }
 
-export function HistoryRenderer({ history, editIndex }: HistoryRendererProps) {
+export function HistoryRenderer({
+  history,
+  editIndex,
+  showTexts = true,
+}: HistoryRendererProps) {
   const {
     hashLayerIndex,
     hashDotIndex,
@@ -68,7 +73,7 @@ export function HistoryRenderer({ history, editIndex }: HistoryRendererProps) {
                   }
                 />
               )}
-              <HistoryText texts={item.texts || []} />
+              {showTexts && <HistoryText texts={item.texts || []} />}
               <DotRenderer
                 dots={item.standaloneDots || []}
                 isInteractive={false}

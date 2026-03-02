@@ -13,10 +13,10 @@ export function getVisibleDotsForImage(imageData: ImageData) {
     .flatMap((historyItem) => historyItem.dots);
 }
 
-export function getVisibleTextsForImage(imageData: ImageData) {
-  return imageData.editHistory
+export function getVisibleTextsForImage(texts: TextElement[]) {
+  return texts
     .filter((historyItem) => historyItem.visible)
-    .flatMap((historyItem) => historyItem.texts);
+    .flatMap((historyItem) => historyItem);
 }
 
 export function getVisibleStandaloneDotsForImage(imageData: ImageData) {
@@ -25,11 +25,59 @@ export function getVisibleStandaloneDotsForImage(imageData: ImageData) {
     .flatMap((historyItem) => historyItem.standaloneDots || []);
 }
 
+// Shared hash position calculation function
+const getHashPosition = (
+  cx: number,
+  cy: number,
+  radius: number,
+  position: string,
+  offset: number,
+) => {
+  switch (position) {
+    case "top":
+      return { x: cx, y: cy - radius - offset, align: "center" as const };
+    case "top-left":
+      return {
+        x: cx - radius - offset,
+        y: cy - radius - offset,
+        align: "right" as const,
+      };
+    case "top-right":
+      return {
+        x: cx + radius + offset,
+        y: cy - radius - offset,
+        align: "left" as const,
+      };
+    case "right":
+      return { x: cx + radius + offset, y: cy, align: "left" as const };
+    case "bottom-right":
+      return {
+        x: cx + radius + offset,
+        y: cy + radius + offset,
+        align: "left" as const,
+      };
+    case "bottom":
+      return { x: cx, y: cy + radius + offset, align: "center" as const };
+    case "bottom-left":
+      return {
+        x: cx - radius - offset,
+        y: cy + radius + offset,
+        align: "right" as const,
+      };
+    case "left":
+      return { x: cx - radius - offset, y: cy, align: "right" as const };
+    default:
+      return { x: cx, y: cy - radius - offset, align: "center" as const };
+  }
+};
+
 export async function processImageWithDots(
   imageData: ImageData,
-  _currentTexts?: TextElement[],
-  _currentStandaloneDots?: DotElement[],
+  textsArray: TextElement[],
+  currentTexts?: TextElement[],
+  currentStandaloneDots?: DotElement[],
   hashStandaloneDotsEnabled?: boolean,
+
   hashStandaloneDotsSettings?: {
     hashFontSize: number;
     hashOffset: number;
@@ -57,12 +105,13 @@ export async function processImageWithDots(
 
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-          reject(new Error("Ошибка при получениии контекста"));
+          reject(new Error("Ошибка при получении контекста"));
           return;
         }
 
         ctx.drawImage(img, 0, 0);
 
+        // Process history items (dots, texts, standalone dots from history)
         imageData.editHistory.forEach((historyItem) => {
           if (!historyItem.visible) return;
 
@@ -73,50 +122,7 @@ export async function processImageWithDots(
           const hashColor = historyItem.settings.hashColor || "black";
           const hashPosition = historyItem.settings.hashPosition || "top";
 
-          const getHashPosition = (
-            cx: number,
-            cy: number,
-            position: string,
-            offset: number,
-          ) => {
-            switch (position) {
-              case "top":
-                return { x: cx, y: cy - dotRadius - offset, align: "center" };
-              case "top-left":
-                return {
-                  x: cx - dotRadius - offset,
-                  y: cy - dotRadius - offset,
-                  align: "right",
-                };
-              case "top-right":
-                return {
-                  x: cx + dotRadius + offset,
-                  y: cy - dotRadius - offset,
-                  align: "left",
-                };
-              case "right":
-                return { x: cx + dotRadius + offset, y: cy, align: "left" };
-              case "bottom-right":
-                return {
-                  x: cx + dotRadius + offset,
-                  y: cy + dotRadius + offset,
-                  align: "left",
-                };
-              case "bottom":
-                return { x: cx, y: cy + dotRadius + offset, align: "center" };
-              case "bottom-left":
-                return {
-                  x: cx - dotRadius - offset,
-                  y: cy + dotRadius + offset,
-                  align: "right",
-                };
-              case "left":
-                return { x: cx - dotRadius - offset, y: cy, align: "right" };
-              default:
-                return { x: cx, y: cy - dotRadius - offset, align: "center" };
-            }
-          };
-
+          // Draw dots from history
           historyItem.dots.forEach((dot, dotIndex) => {
             ctx.beginPath();
             ctx.arc(dot.cx, dot.cy, dotRadius, 0, 2 * Math.PI);
@@ -129,16 +135,23 @@ export async function processImageWithDots(
               const color = dot.hashColor ?? hashColor;
               const position = dot.hashPosition ?? hashPosition;
 
-              const pos = getHashPosition(dot.cx, dot.cy, position, offset);
+              const pos = getHashPosition(
+                dot.cx,
+                dot.cy,
+                dotRadius,
+                position,
+                offset,
+              );
               ctx.font = `bold ${fontSize}px sans-serif`;
               ctx.fillStyle = color;
-              ctx.textAlign = pos.align as CanvasTextAlign;
+              ctx.textAlign = pos.align;
               ctx.textBaseline = "alphabetic";
               ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
             }
           });
 
-          const texts = historyItem.texts || [];
+          // Draw texts from history
+          const texts = textsArray || [];
           texts.forEach((textElement) => {
             if (textElement.visible === false) return;
             ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
@@ -148,11 +161,13 @@ export async function processImageWithDots(
             ctx.fillText(textElement.text, textElement.x, textElement.y);
           });
 
+          // Draw standalone dots from history
           const standaloneDots = historyItem.standaloneDots || [];
           standaloneDots.forEach((dot, dotIndex) => {
             if (dot.visible === false) return;
+            const radius = dot.size / 2;
             ctx.beginPath();
-            ctx.arc(dot.x, dot.y, dot.size / 2, 0, 2 * Math.PI);
+            ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
             ctx.fillStyle = dot.color;
             ctx.fill();
 
@@ -162,29 +177,35 @@ export async function processImageWithDots(
               const color = dot.hashColor ?? hashColor;
               const position = dot.hashPosition ?? hashPosition;
 
-              const pos = getHashPosition(dot.x, dot.y, position, offset);
+              const pos = getHashPosition(
+                dot.x,
+                dot.y,
+                radius,
+                position,
+                offset,
+              );
               ctx.font = `bold ${fontSize}px sans-serif`;
               ctx.fillStyle = color;
-              ctx.textAlign = pos.align as CanvasTextAlign;
+              ctx.textAlign = pos.align;
               ctx.textBaseline = "alphabetic";
               ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
             }
           });
         });
 
-        const imageTexts = imageData.currentTexts || [];
-        if (imageTexts.length > 0) {
-          imageTexts.forEach((textElement) => {
-            if (textElement.visible === false) return;
-            ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
-            ctx.fillStyle = textElement.color;
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
-            ctx.fillText(textElement.text, textElement.x, textElement.y);
-          });
-        }
+        // Draw CURRENT texts from useTextState()
+        const texts = textsArray || [];
+        texts.forEach((textElement) => {
+          if (textElement.visible === false) return;
+          ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
+          ctx.fillStyle = textElement.color;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
+          ctx.fillText(textElement.text, textElement.x, textElement.y);
+        });
 
-        const imageDots = imageData.currentStandaloneDots || [];
+        // Draw CURRENT standalone dots from useDotState()
+        const standaloneDots = currentStandaloneDots || [];
         const standaloneHashFontSize =
           hashStandaloneDotsSettings?.hashFontSize ?? 12;
         const standaloneHashOffset =
@@ -193,79 +214,29 @@ export async function processImageWithDots(
           hashStandaloneDotsSettings?.hashColor ?? "black";
         const standaloneHashPosition =
           hashStandaloneDotsSettings?.hashPosition ?? "top";
-        if (imageDots.length > 0) {
-          imageDots.forEach((dot, dotIndex) => {
-            if (dot.visible === false) return;
-            const dotRadius = dot.size / 2;
-            ctx.beginPath();
-            ctx.arc(dot.x, dot.y, dotRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = dot.color;
-            ctx.fill();
 
-            if (hashStandaloneDotsEnabled) {
-              const fontSize = dot.hashFontSize ?? standaloneHashFontSize;
-              const offset = dot.hashOffset ?? standaloneHashOffset;
-              const color = dot.hashColor ?? standaloneHashColor;
-              const position = dot.hashPosition ?? standaloneHashPosition;
+        standaloneDots.forEach((dot, dotIndex) => {
+          if (dot.visible === false) return;
+          const radius = dot.size / 2;
+          ctx.beginPath();
+          ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
+          ctx.fillStyle = dot.color;
+          ctx.fill();
 
-              const getDotHashPosition = (
-                cx: number,
-                cy: number,
-                pos: string,
-                off: number,
-              ) => {
-                switch (pos) {
-                  case "top":
-                    return { x: cx, y: cy - dotRadius - off, align: "center" };
-                  case "top-left":
-                    return {
-                      x: cx - dotRadius - off,
-                      y: cy - dotRadius - off,
-                      align: "right",
-                    };
-                  case "top-right":
-                    return {
-                      x: cx + dotRadius + off,
-                      y: cy - dotRadius - off,
-                      align: "left",
-                    };
-                  case "right":
-                    return { x: cx + dotRadius + off, y: cy, align: "left" };
-                  case "bottom-right":
-                    return {
-                      x: cx + dotRadius + off,
-                      y: cy + dotRadius + off,
-                      align: "left",
-                    };
-                  case "bottom":
-                    return { x: cx, y: cy + dotRadius + off, align: "center" };
-                  case "bottom-left":
-                    return {
-                      x: cx - dotRadius - off,
-                      y: cy + dotRadius + off,
-                      align: "right",
-                    };
-                  case "left":
-                    return { x: cx - dotRadius - off, y: cy, align: "right" };
-                  default:
-                    return { x: cx, y: cy - dotRadius - off, align: "center" };
-                }
-              };
+          if (hashStandaloneDotsEnabled) {
+            const fontSize = dot.hashFontSize ?? standaloneHashFontSize;
+            const offset = dot.hashOffset ?? standaloneHashOffset;
+            const color = dot.hashColor ?? standaloneHashColor;
+            const position = dot.hashPosition ?? standaloneHashPosition;
 
-              const posResult = getDotHashPosition(
-                dot.x,
-                dot.y,
-                position,
-                offset,
-              );
-              ctx.font = `bold ${fontSize}px sans-serif`;
-              ctx.fillStyle = color;
-              ctx.textAlign = posResult.align as CanvasTextAlign;
-              ctx.textBaseline = "alphabetic";
-              ctx.fillText(String(dotIndex + 1), posResult.x, posResult.y);
-            }
-          });
-        }
+            const pos = getHashPosition(dot.x, dot.y, radius, position, offset);
+            ctx.font = `bold ${fontSize}px sans-serif`;
+            ctx.fillStyle = color;
+            ctx.textAlign = pos.align;
+            ctx.textBaseline = "alphabetic";
+            ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
+          }
+        });
 
         canvas.toBlob(
           (blob) => {
@@ -274,7 +245,20 @@ export async function processImageWithDots(
               return;
             }
 
-            const name = imageData.name.replace(/\.[^/.]+$/, "") + ".png";
+            // Use current texts (from useTextState()) for naming
+            const allTexts = currentTexts || [];
+            const firstText = allTexts.find((t) => t.visible !== false);
+
+            let name: string;
+            if (firstText) {
+              const sanitizedText = firstText.text
+                .replace(/[^a-zA-Zа-яА-Я0-9]/g, "_")
+                .slice(0, 50);
+              name = sanitizedText;
+            } else {
+              name = imageData.name.replace(/\\.[^/.]+$/, "");
+            }
+
             resolve({ name, blob, dimensions: imageData.dimensions });
           },
           "image/png",

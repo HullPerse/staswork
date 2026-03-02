@@ -16,34 +16,20 @@ const FONT_FAMILIES = [
 ];
 
 export default function TextSettings() {
-  const { imageHistory, activeImageId } = useCanvasState();
+  const { updateActiveImageTexts } = useCanvasState();
 
   const {
     textSettings,
     setTextSettings,
     texts,
+    setTexts,
     selectedTextId,
     setSelectedTextId,
     updateTextElement,
     deleteTextElement,
   } = useTextState();
 
-  const activeImage = imageHistory.find((img) => img.id === activeImageId);
-  const history = activeImage?.editHistory || [];
-
-  const allTexts = [
-    ...texts,
-    ...history
-      .filter((item) => item.visible)
-      .flatMap((item) =>
-        (item.texts || []).map((text) => ({
-          ...text,
-          visible: text.visible !== undefined ? text.visible : true,
-        })),
-      ),
-  ];
-
-  const selectedLayer = allTexts.find((l) => l.id === selectedTextId);
+  const selectedLayer = texts.find((l) => l.id === selectedTextId);
 
   const [localText, setLocalText] = useState(
     selectedLayer?.text || textSettings.text || "",
@@ -93,6 +79,7 @@ export default function TextSettings() {
 
   const handleTextChange = (value: string) => {
     setLocalText(value);
+
     if (selectedLayer) {
       throttledUpdate({ text: value || "Текст" });
     } else {
@@ -120,27 +107,53 @@ export default function TextSettings() {
 
   const toggleTextVisibility = useCallback(
     (textId: string) => {
-      const textElement = allTexts.find((t) => t.id === textId);
-      if (textElement) {
-        updateTextElement(textId, { visible: !textElement.visible });
-      }
+      const updatedTexts = texts.map((text) =>
+        text.id === textId ? { ...text, visible: !text.visible } : text,
+      );
+
+      setTexts(updatedTexts); // Update texts state immediately
+      updateActiveImageTexts(updatedTexts); // Sync with canvas state
     },
-    [allTexts, updateTextElement],
+    [texts, setTexts, updateActiveImageTexts],
   );
 
   const deleteTextLayer = useCallback(
     (textId: string) => {
-      deleteTextElement(textId);
+      // 1. Filter texts to remove the deleted one
+      const newTexts = texts.filter((t) => t.id !== textId);
+
+      // 2. IMMEDIATELY update canvas state's imageData.currentTexts
+      updateActiveImageTexts(newTexts);
+
+      // 3. Update local text state
+      setTexts(newTexts);
+
+      // 4. Clear selection and do any other cleanup
       if (selectedTextId === textId) {
         setSelectedTextId(null);
       }
+      deleteTextElement(textId); // Last, for any additional cleanup
     },
-    [deleteTextElement, selectedTextId, setSelectedTextId],
+    [
+      texts,
+      updateActiveImageTexts,
+      setTexts,
+      selectedTextId,
+      setSelectedTextId,
+      deleteTextElement,
+    ],
   );
+
+  const handleLayerClick = (layerId: string) => {
+    if (selectedTextId === layerId) {
+      setSelectedTextId(null);
+    } else {
+      setSelectedTextId(layerId);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3 p-2 h-full ">
-      {/* Text content */}
       <div className="flex flex-col gap-2">
         <span className="text-sm">Текст:</span>
         <Input
@@ -152,7 +165,6 @@ export default function TextSettings() {
         />
       </div>
 
-      {/* Font size */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-row w-full items-center justify-between">
           <span className="text-sm">Размер:</span>
@@ -168,7 +180,6 @@ export default function TextSettings() {
         />
       </div>
 
-      {/* Font family */}
       <div className="flex flex-col gap-2 ">
         <span className="text-sm">Шрифт:</span>
         <select
@@ -184,13 +195,12 @@ export default function TextSettings() {
         </select>
       </div>
 
-      {/* Text layers list */}
       <div className="flex flex-col h-full overflow-y-auto">
-        {allTexts.length > 0 && (
+        {texts.length > 0 && (
           <div className="flex flex-col gap-2 mt-4 ">
             <span className="font-medium">Слои:</span>
             <div className="flex flex-col gap-1">
-              {allTexts.map((layer, index) => (
+              {texts.map((layer, index) => (
                 <div
                   key={layer.id}
                   className={`flex flex-row items-center justify-between p-2 rounded border cursor-pointer transition-colors ${
@@ -198,11 +208,7 @@ export default function TextSettings() {
                       ? "border-primary border-dashed bg-primary/10"
                       : "border-white/10 hover:border-white/30"
                   }`}
-                  onClick={() => {
-                    if (selectedTextId === layer.id)
-                      return setSelectedTextId(null);
-                    setSelectedTextId(layer.id);
-                  }}
+                  onClick={() => handleLayerClick(layer.id)}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Move className="size-3 text-white/50 shrink-0" />
@@ -214,7 +220,8 @@ export default function TextSettings() {
                   <div className="flex flex-row gap-1 shrink-0">
                     <button
                       className="p-1 hover:bg-white/20 rounded text-white/70"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         toggleTextVisibility(layer.id);
                       }}
                       title={layer.visible ? "Hide" : "Show"}

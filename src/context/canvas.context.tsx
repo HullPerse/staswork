@@ -135,12 +135,15 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
   );
 
   const updateActiveImageTexts = useCallback(
-    (newTexts: TextElement[]) => {
-      if (!activeImageId) return;
-
+    (texts: TextElement[]) => {
       setImageHistory((prev) =>
-        prev.map((img) =>
-          img.id === activeImageId ? { ...img, currentTexts: newTexts } : img,
+        prev.map((image) =>
+          image.id === activeImageId
+            ? {
+                ...image,
+                currentTexts: texts, // This line is crucial for export
+              }
+            : image,
         ),
       );
     },

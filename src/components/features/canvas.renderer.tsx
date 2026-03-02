@@ -266,7 +266,11 @@ export default function ModeRenderer({
         className="absolute inset-0 cursor-crosshair"
         onClick={handleCanvasClick}
       >
-        <HistoryRenderer history={history} editIndex={editIndex} />
+        <HistoryRenderer
+          history={history}
+          editIndex={editIndex}
+          showTexts={false}
+        />
         <TextRenderer
           texts={texts}
           isInteractive={true}
@@ -303,13 +307,6 @@ export default function ModeRenderer({
       >
         <SelectionPolygon points={points} />
         <HistoryRenderer history={history} editIndex={editIndex} />
-        <TextRenderer
-          texts={texts}
-          isInteractive={textMode}
-          selectedTextId={selectedTextId}
-          onTextMouseDown={handleTextMouseDown}
-          onTextClick={handleTextClick}
-        />
         <DotRenderer
           dots={standaloneDots}
           isInteractive={false}
@@ -318,6 +315,13 @@ export default function ModeRenderer({
           hashOffset={hashStandaloneDotsSettings.hashOffset}
           hashColor={hashStandaloneDotsSettings.hashColor}
           hashPosition={hashStandaloneDotsSettings.hashPosition}
+        />
+        <TextRenderer
+          texts={texts}
+          isInteractive={textMode}
+          selectedTextId={selectedTextId}
+          onTextMouseDown={handleTextMouseDown}
+          onTextClick={handleTextClick}
         />
         <GeneratedDot dots={dots} size={size} />
       </SvgOverlay>
