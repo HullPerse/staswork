@@ -13,10 +13,10 @@ export function getVisibleDotsForImage(imageData: ImageData) {
     .flatMap((historyItem) => historyItem.dots);
 }
 
-export function getVisibleTextsForImage(texts: TextElement[]) {
-  return texts
+export function getVisibleTextsForImage(imageData: ImageData) {
+  return imageData.editHistory
     .filter((historyItem) => historyItem.visible)
-    .flatMap((historyItem) => historyItem);
+    .flatMap((historyItem) => historyItem.texts || []);
 }
 
 export function getVisibleStandaloneDotsForImage(imageData: ImageData) {
@@ -73,11 +73,9 @@ const getHashPosition = (
 
 export async function processImageWithDots(
   imageData: ImageData,
-  textsArray: TextElement[],
-  currentTexts?: TextElement[],
+  currentTexts?: TextElement[], // Texts from useTextState()
   currentStandaloneDots?: DotElement[],
   hashStandaloneDotsEnabled?: boolean,
-
   hashStandaloneDotsSettings?: {
     hashFontSize: number;
     hashOffset: number;
@@ -111,7 +109,7 @@ export async function processImageWithDots(
 
         ctx.drawImage(img, 0, 0);
 
-        // Process history items (dots, texts, standalone dots from history)
+        // 1. Process history items (dots, texts, standalone dots from history)
         imageData.editHistory.forEach((historyItem) => {
           if (!historyItem.visible) return;
 
@@ -150,9 +148,8 @@ export async function processImageWithDots(
             }
           });
 
-          // Draw texts from history
-          const texts = textsArray || [];
-          texts.forEach((textElement) => {
+          // Draw texts from history items
+          (historyItem.texts || []).forEach((textElement) => {
             if (textElement.visible === false) return;
             ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
             ctx.fillStyle = textElement.color;
@@ -162,8 +159,7 @@ export async function processImageWithDots(
           });
 
           // Draw standalone dots from history
-          const standaloneDots = historyItem.standaloneDots || [];
-          standaloneDots.forEach((dot, dotIndex) => {
+          (historyItem.standaloneDots || []).forEach((dot, dotIndex) => {
             if (dot.visible === false) return;
             const radius = dot.size / 2;
             ctx.beginPath();
@@ -193,9 +189,8 @@ export async function processImageWithDots(
           });
         });
 
-        // Draw CURRENT texts from useTextState()
-        const texts = textsArray || [];
-        texts.forEach((textElement) => {
+        // 2. Draw CURRENT texts from useTextState()
+        (currentTexts || []).forEach((textElement) => {
           if (textElement.visible === false) return;
           ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
           ctx.fillStyle = textElement.color;
@@ -204,7 +199,7 @@ export async function processImageWithDots(
           ctx.fillText(textElement.text, textElement.x, textElement.y);
         });
 
-        // Draw CURRENT standalone dots from useDotState()
+        // 3. Draw CURRENT standalone dots from useDotState()
         const standaloneDots = currentStandaloneDots || [];
         const standaloneHashFontSize =
           hashStandaloneDotsSettings?.hashFontSize ?? 12;
@@ -241,22 +236,26 @@ export async function processImageWithDots(
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(new Error("Ошибка при создании blob"));
+              reject(new Error("Ошибка при создания blob"));
               return;
             }
 
-            // Use current texts (from useTextState()) for naming
+            // FIXED: Proper file naming - use first visible text, fallback to image name
             const allTexts = currentTexts || [];
-            const firstText = allTexts.find((t) => t.visible !== false);
+            const firstVisibleText = allTexts.find((t) => t.visible !== false);
 
             let name: string;
-            if (firstText) {
-              const sanitizedText = firstText.text
-                .replace(/[^a-zA-Zа-яА-Я0-9]/g, "_")
+            if (firstVisibleText) {
+              // Use first visible text for filename
+              const sanitizedText = firstVisibleText.text
+                .replace(/[^a-zA-Zа-яА-Я0-9\s]/g, "_")
+                .trim()
+                .replace(/\s+/g, "_")
                 .slice(0, 50);
-              name = sanitizedText;
+              name = sanitizedText + ".png";
             } else {
-              name = imageData.name.replace(/\\.[^/.]+$/, "");
+              // Fallback to original image name without extension
+              name = imageData.name.replace(/\.[^/.]+$/, "") + ".png";
             }
 
             resolve({ name, blob, dimensions: imageData.dimensions });
