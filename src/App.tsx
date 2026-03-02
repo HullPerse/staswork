@@ -57,6 +57,8 @@ function App() {
     updateActiveImageDots,
     hashMode,
     setHashMode,
+    hashStandaloneDotsEnabled,
+    hashStandaloneDotsSettings,
   } = useCanvasState();
 
   const { texts, setTexts, clearTexts } = useTextState();
@@ -227,7 +229,13 @@ function App() {
           currentIndex: i + 1,
         }));
 
-        const processedImage = await processImageWithDots(image);
+        const processedImage = await processImageWithDots(
+          image,
+          undefined,
+          undefined,
+          hashStandaloneDotsEnabled,
+          hashStandaloneDotsSettings,
+        );
         processedImages.push(processedImage);
       }
 
@@ -270,7 +278,13 @@ function App() {
           currentIndex: i + 1,
         }));
 
-        const processedImage = await processImageWithDots(image);
+        const processedImage = await processImageWithDots(
+          image,
+          undefined,
+          undefined,
+          hashStandaloneDotsEnabled,
+          hashStandaloneDotsSettings,
+        );
         processedImages.push(processedImage);
       }
 
