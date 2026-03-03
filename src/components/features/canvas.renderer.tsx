@@ -9,6 +9,7 @@ import { useCallback, type MouseEvent } from "react";
 import { useCanvasState } from "@/context/canvas.context";
 import { useTextState } from "@/context/text.context";
 import { useDotState } from "@/context/dot.context";
+import { useUndoState } from "@/context/undo.context";
 import { useDotDrag, useTextDrag } from "@/hook/canvas.hook";
 
 export default function ModeRenderer({
@@ -38,6 +39,7 @@ export default function ModeRenderer({
     setSelectedDotId,
     updateDotElement,
   } = useDotState();
+  const { recordAction } = useUndoState();
   const {
     setArea,
     points,
@@ -108,6 +110,7 @@ export default function ModeRenderer({
         };
         setTexts([...texts, newTextElement]);
         setSelectedTextId(newTextElement.id);
+        recordAction({ type: "addText", data: newTextElement });
       } else if (dotMode) {
         const newDotElement: DotElement = {
           id: `dot-${Date.now()}`,
@@ -119,6 +122,7 @@ export default function ModeRenderer({
         };
         setStandaloneDots([...standaloneDots, newDotElement]);
         setSelectedDotId(newDotElement.id);
+        recordAction({ type: "addDot", data: newDotElement });
       }
     },
     [
@@ -132,6 +136,7 @@ export default function ModeRenderer({
       dotSettings,
       setStandaloneDots,
       setSelectedDotId,
+      recordAction,
     ],
   );
 

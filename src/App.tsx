@@ -27,6 +27,7 @@ import { Button } from "./components/ui/button.component";
 import { useCanvasState } from "./context/canvas.context";
 import { useTextState } from "./context/text.context";
 import { useDotState } from "./context/dot.context";
+import { useUndoState } from "./context/undo.context";
 import {
   createImageArchive,
   downloadArchive,
@@ -63,6 +64,7 @@ function App() {
 
   const { texts, setTexts, clearTexts } = useTextState();
   const { standaloneDots, setStandaloneDots, clearDots } = useDotState();
+  const { undo } = useUndoState();
 
   const isInitializingRef = useRef(false);
 
@@ -92,6 +94,32 @@ function App() {
 
     updateActiveImageDots(standaloneDots);
   }, [standaloneDots, updateActiveImageDots, activeImageId]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (e.key === "z" || e.key === "я" || e.code === "KeyZ")
+      ) {
+        e.preventDefault();
+        const action = undo();
+        if (!action) return;
+
+        if (action.type === "addText") {
+          const textToRemove = action.data as { id: string };
+          setTexts((prev) => prev.filter((t) => t.id !== textToRemove.id));
+        } else if (action.type === "addDot") {
+          const dotToRemove = action.data as { id: string };
+          setStandaloneDots((prev) =>
+            prev.filter((d) => d.id !== dotToRemove.id),
+          );
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo, setTexts, setStandaloneDots]);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -231,8 +259,8 @@ function App() {
 
         const processedImage = await processImageWithDots(
           image,
-          texts,
-          undefined,
+          image.currentTexts,
+          image.currentStandaloneDots,
           hashStandaloneDotsEnabled,
           hashStandaloneDotsSettings,
         );
@@ -280,8 +308,8 @@ function App() {
 
         const processedImage = await processImageWithDots(
           image,
-          texts,
-          undefined,
+          image.currentTexts,
+          image.currentStandaloneDots,
           hashStandaloneDotsEnabled,
           hashStandaloneDotsSettings,
         );

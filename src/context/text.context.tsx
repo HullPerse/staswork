@@ -20,7 +20,9 @@ export interface TextContextState {
 }
 
 export interface TextContextActions {
-  setTexts: (texts: TextElement[]) => void;
+  setTexts: (
+    texts: TextElement[] | ((prev: TextElement[]) => TextElement[]),
+  ) => void;
   setSelectedTextId: (id: string | null) => void;
   setTextSettings: (settings: {
     fontSize: number;

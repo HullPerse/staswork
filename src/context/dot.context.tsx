@@ -18,7 +18,9 @@ export interface DotContextState {
 }
 
 export interface DotContextActions {
-  setStandaloneDots: (dots: DotElement[]) => void;
+  setStandaloneDots: (
+    dots: DotElement[] | ((prev: DotElement[]) => DotElement[]),
+  ) => void;
   setSelectedDotId: (id: string | null) => void;
   setDotSettings: (settings: { size: number; color: string }) => void;
   updateDotElement: (id: string, updates: Partial<DotElement>) => void;
