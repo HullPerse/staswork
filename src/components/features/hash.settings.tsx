@@ -147,21 +147,22 @@ function StandaloneDotRow({
         <Circle className="w-3 h-3" />
       </span>
       <span className="flex items-center justify-center px-2 text-xs text-muted-foreground">
-        {hasCustomSettings ? (
-          <span className="flex items-center gap-1">
-            <span
-              className="w-3 h-3 rounded-full border"
-              style={{
-                backgroundColor:
-                  dot.hashColor || settings.hashColor || "#000000",
-              }}
-            />
-            {dot.hashFontSize || settings.hashFontSize || 12}
-            px
-          </span>
-        ) : (
-          <Hash className="w-3 h-3" />
-        )}
+        <>
+          <Hash className="w-3 h-3" /> {index + 1}
+          {hasCustomSettings && (
+            <span className="flex items-center gap-1 ml-5">
+              <span
+                className="w-3 h-3 rounded-full border"
+                style={{
+                  backgroundColor:
+                    dot.hashColor || settings.hashColor || "#000000",
+                }}
+              />
+              {dot.hashFontSize || settings.hashFontSize || 12}
+              px
+            </span>
+          )}
+        </>
       </span>
       <div className="flex flex-row ml-auto p-1 h-full items-center justify-center gap-1">
         {hasCustomSettings && (
