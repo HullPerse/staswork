@@ -14,6 +14,7 @@ import {
   ImageData,
   TextElement,
   DotElement,
+  StampElement,
 } from "@/types";
 import { createImageDataWithMetadata } from "@/lib/utils";
 import ImageStorage from "@/service/image.service";
@@ -48,6 +49,12 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     { cx: 0, cy: 0 },
   ]);
   const [textMode, setTextMode] = useState<CanvasState["textMode"]>(false);
+  const [stampMode, setStampMode] = useState<CanvasState["stampMode"]>(false);
+  const [stamps, setStamps] = useState<StampElement[]>([]);
+  const [selectedStampId, setSelectedStampId] = useState<string | null>(null);
+  const [selectedStampIndex, setSelectedStampIndex] = useState<number | null>(
+    null,
+  );
   const [dotMode, setDotMode] = useState<CanvasState["dotMode"]>(false);
   const [randomJitter, setRandomJitter] =
     useState<CanvasState["randomJitter"]>(false);
@@ -141,7 +148,7 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
           image.id === activeImageId
             ? {
                 ...image,
-                currentTexts: texts, // This line is crucial for export
+                currentTexts: texts,
               }
             : image,
         ),
@@ -165,6 +172,40 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
     [activeImageId],
   );
 
+  const updateActiveImageStamps = useCallback(
+    (newStamps: StampElement[]) => {
+      if (!activeImageId) return;
+
+      setImageHistory((prev) =>
+        prev.map((img) =>
+          img.id === activeImageId ? { ...img, currentStamps: newStamps } : img,
+        ),
+      );
+    },
+    [activeImageId],
+  );
+
+  const updateStampElement = useCallback(
+    (id: string, updates: Partial<StampElement>) => {
+      setStamps((prev) =>
+        prev.map((stamp) =>
+          stamp.id === id ? { ...stamp, ...updates } : stamp,
+        ),
+      );
+    },
+    [],
+  );
+
+  const deleteStampElement = useCallback((id: string) => {
+    setStamps((prev) => prev.filter((stamp) => stamp.id !== id));
+    setSelectedStampId((prev) => (prev === id ? null : prev));
+  }, []);
+
+  const clearStamps = useCallback(() => {
+    setStamps([]);
+    setSelectedStampId(null);
+  }, []);
+
   const value = useMemo(
     () => ({
       imageHistory,
@@ -181,6 +222,10 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       results,
       textMode,
       dotMode,
+      stampMode,
+      stamps,
+      selectedStampId,
+      selectedStampIndex,
       randomJitter,
       setImageHistory,
       setActiveImageId,
@@ -196,12 +241,20 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       setResults,
       setTextMode,
       setDotMode,
+      setStampMode,
+      setStamps,
+      setSelectedStampId,
+      setSelectedStampIndex,
       setRandomJitter,
       handleImagesUpload,
       handleImageSelect,
       updateActiveImageHistory,
       updateActiveImageTexts,
       updateActiveImageDots,
+      updateActiveImageStamps,
+      updateStampElement,
+      deleteStampElement,
+      clearStamps,
       jitter,
       setJitter,
       hashMode,
@@ -230,6 +283,10 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       results,
       textMode,
       dotMode,
+      stampMode,
+      stamps,
+      selectedStampId,
+      selectedStampIndex,
       randomJitter,
       setImageHistory,
       setActiveImageId,
@@ -245,12 +302,20 @@ export function CanvasProvider({ children }: { children: ReactNode }) {
       setResults,
       setTextMode,
       setDotMode,
+      setStampMode,
+      setStamps,
+      setSelectedStampId,
+      setSelectedStampIndex,
       setRandomJitter,
       handleImagesUpload,
       handleImageSelect,
       updateActiveImageHistory,
       updateActiveImageTexts,
       updateActiveImageDots,
+      updateActiveImageStamps,
+      updateStampElement,
+      deleteStampElement,
+      clearStamps,
       jitter,
       setJitter,
       hashMode,

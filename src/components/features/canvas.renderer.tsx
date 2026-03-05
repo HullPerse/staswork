@@ -3,14 +3,22 @@ import { SelectionPolygon, SvgOverlay } from "../shared/svg.component";
 import { DotRenderer, GeneratedDot } from "./dot.renderer";
 import { HistoryRenderer } from "./history.renderer";
 import { TextRenderer } from "./text.renderer";
+import { StampRenderer } from "./stamp.renderer";
 import { Image } from "../shared/image.component";
-import { DotElement, Points, PointsHistory, TextElement } from "@/types";
+import {
+  DotElement,
+  Points,
+  PointsHistory,
+  TextElement,
+  StampElement,
+} from "@/types";
 import { useCallback, type MouseEvent } from "react";
 import { useCanvasState } from "@/context/canvas.context";
 import { useTextState } from "@/context/text.context";
 import { useDotState } from "@/context/dot.context";
 import { useUndoState } from "@/context/undo.context";
-import { useDotDrag, useTextDrag } from "@/hook/canvas.hook";
+import { useDotDrag, useTextDrag, useStampDrag } from "@/hook/canvas.hook";
+import { stampConfig } from "./stamp.settings";
 
 export default function ModeRenderer({
   imgSrc,
@@ -49,6 +57,13 @@ export default function ModeRenderer({
     editIndex,
     textMode,
     dotMode,
+    stampMode,
+    stamps,
+    setStamps,
+    selectedStampIndex,
+    selectedStampId,
+    setSelectedStampId,
+    updateStampElement,
     hashStandaloneDotsEnabled,
     hashStandaloneDotsSettings,
   } = useCanvasState();
@@ -79,14 +94,20 @@ export default function ModeRenderer({
 
   const handleCanvasClick = useCallback(
     (e: MouseEvent<SVGSVGElement>) => {
-      if (!textMode && !dotMode) return;
+      if (!textMode && !dotMode && !stampMode) return;
 
       const target = e.target as SVGElement;
       if (
         target.tagName === "text" ||
         target.tagName === "g" ||
+        target.tagName === "image" ||
         target.tagName === "circle"
       ) {
+        return;
+      }
+
+      // If a stamp is already selected from layers, don't place new stamps
+      if (stampMode && selectedStampId !== null) {
         return;
       }
 
@@ -123,11 +144,28 @@ export default function ModeRenderer({
         setStandaloneDots([...standaloneDots, newDotElement]);
         setSelectedDotId(newDotElement.id);
         recordAction({ type: "addDot", data: newDotElement });
+      } else if (stampMode && selectedStampIndex !== null) {
+        const selectedStamp = stampConfig[selectedStampIndex];
+        if (selectedStamp) {
+          const newStampElement: StampElement = {
+            id: `stamp-${Date.now()}`,
+            x,
+            y,
+            path: selectedStamp.path,
+            label: selectedStamp.label,
+            width: selectedStamp.width || 64,
+            height: selectedStamp.height || 64,
+            visible: true,
+          };
+          setStamps([...stamps, newStampElement]);
+          setSelectedStampId(newStampElement.id);
+        }
       }
     },
     [
       textMode,
       dotMode,
+      stampMode,
       texts,
       textSettings,
       setTexts,
@@ -136,6 +174,11 @@ export default function ModeRenderer({
       dotSettings,
       setStandaloneDots,
       setSelectedDotId,
+      stamps,
+      selectedStampId,
+      selectedStampIndex,
+      setStamps,
+      setSelectedStampId,
       recordAction,
     ],
   );
@@ -147,6 +190,10 @@ export default function ModeRenderer({
   const handleDotMouseDown = useDotDrag(
     { updateElement: updateDotElement, setSelectedId: setSelectedDotId },
     standaloneDots,
+  );
+  const handleStampMouseDown = useStampDrag(
+    { updateElement: updateStampElement, setSelectedId: setSelectedStampId },
+    stamps,
   );
 
   const handleTextClick = useCallback(
@@ -221,6 +268,12 @@ export default function ModeRenderer({
             onTextMouseDown={handleTextMouseDown}
             onTextClick={handleTextClick}
           />
+          <StampRenderer
+            stamps={stamps}
+            isInteractive={true}
+            selectedStampId={selectedStampId}
+            onStampMouseDown={handleStampMouseDown}
+          />
         </SvgOverlay>
       )}
     </div>
@@ -253,6 +306,12 @@ export default function ModeRenderer({
           hashPosition={hashStandaloneDotsSettings.hashPosition}
         />
         <TextRenderer texts={texts} isInteractive={false} />
+        <StampRenderer
+          stamps={stamps}
+          isInteractive={true}
+          selectedStampId={selectedStampId}
+          onStampMouseDown={handleStampMouseDown}
+        />
         <GeneratedDot dots={dots} size={size} />
       </SvgOverlay>
     </div>
@@ -293,6 +352,12 @@ export default function ModeRenderer({
           hashPosition={hashStandaloneDotsSettings.hashPosition}
         />
         <GeneratedDot dots={dots} size={size} />
+        <StampRenderer
+          stamps={stamps}
+          isInteractive={true}
+          selectedStampId={selectedStampId}
+          onStampMouseDown={handleStampMouseDown}
+        />
       </SvgOverlay>
     </div>
   );
@@ -329,6 +394,35 @@ export default function ModeRenderer({
           onTextClick={handleTextClick}
         />
         <GeneratedDot dots={dots} size={size} />
+        <StampRenderer
+          stamps={stamps}
+          isInteractive={true}
+          selectedStampId={selectedStampId}
+          onStampMouseDown={handleStampMouseDown}
+        />
+      </SvgOverlay>
+    </div>
+  );
+
+  const renderStampMode = () => (
+    <div className="relative">
+      <Image
+        src={imgSrc}
+        alt="Image"
+        className="block max-h-full max-w-full object-contain"
+        draggable={false}
+      />
+      <SvgOverlay
+        dimensions={dimensions}
+        className="absolute inset-0 cursor-crosshair"
+        onClick={handleCanvasClick}
+      >
+        <StampRenderer
+          stamps={stamps}
+          isInteractive={true}
+          selectedStampId={selectedStampId}
+          onStampMouseDown={handleStampMouseDown}
+        />
       </SvgOverlay>
     </div>
   );
@@ -337,6 +431,7 @@ export default function ModeRenderer({
     renderLasso: renderLasso(),
     renderDot: renderDotMode(),
     renderText: renderTextMode(),
+    renderStamp: renderStampMode(),
     renderDefault: renderDefaultView(),
   };
 }

@@ -26,6 +26,7 @@ function ImageCanvas() {
     activeImageId,
     textMode,
     dotMode,
+    stampMode,
     randomJitter,
     jitter,
   } = useCanvasState();
@@ -216,7 +217,7 @@ function ImageCanvas() {
   ]);
 
   const renderContent = () => {
-    if (!textMode && !dotMode) {
+    if (!textMode && !dotMode && !stampMode) {
       return ModeRenderer({ imgSrc, dimensions, dots, history }).renderLasso;
     }
     if (dotMode) {
@@ -224,6 +225,9 @@ function ImageCanvas() {
     }
     if (textMode) {
       return ModeRenderer({ imgSrc, dimensions, dots, history }).renderText;
+    }
+    if (stampMode) {
+      return ModeRenderer({ imgSrc, dimensions, dots, history }).renderStamp;
     }
 
     return ModeRenderer({ imgSrc, dimensions, dots, history }).renderDefault;

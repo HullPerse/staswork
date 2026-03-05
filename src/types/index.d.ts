@@ -35,6 +35,17 @@ export type DotElement = {
     | "left";
 };
 
+export type StampElement = {
+  id: string;
+  x: number;
+  y: number;
+  path: string;
+  label: string;
+  width: number;
+  height: number;
+  visible: boolean;
+};
+
 export type PointsHistory = {
   dots: {
     cx: number;
@@ -82,7 +93,7 @@ export type PointsHistory = {
 export type ImageData = {
   id: string;
   file: File;
-  BlobUrl: string;
+  blobUrl: string;
   dimensions: {
     width: number;
     height: number;
@@ -91,6 +102,7 @@ export type ImageData = {
   name: string;
   currentTexts: TextElement[];
   currentStandaloneDots: DotElement[];
+  currentStamps: StampElement[];
   sourceFile?: File;
   pageNumber?: number;
 };
@@ -111,6 +123,10 @@ export interface CanvasState {
   results: { cx: number; cy: number }[];
   dotMode: boolean;
   textMode: boolean;
+  stampMode: boolean;
+  stamps: StampElement[];
+  selectedStampId: string | null;
+  selectedStampIndex: number | null;
   randomJitter: boolean;
   jitter: number;
   hashMode: boolean;
@@ -149,12 +165,19 @@ export interface CanvasStateActions {
   setResults: (results: { cx: number; cy: number }[]) => void;
   setTextMode: (mode: boolean) => void;
   setDotMode: (mode: boolean) => void;
+  setStampMode: (mode: boolean) => void;
+  setStamps: (stamps: StampElement[]) => void;
+  setSelectedStampId: (id: string | null) => void;
+  setSelectedStampIndex: (index: number | null) => void;
   setRandomJitter: (jitter: boolean) => void;
   handleImagesUpload: (files: File[]) => Promise<void>;
   handleImageSelect: (imageId: string) => void;
   updateActiveImageHistory: (newHistory: PointsHistory[]) => void;
   updateActiveImageTexts: (texts: TextElement[]) => void;
   updateActiveImageDots: (dots: DotElement[]) => void;
+  updateActiveImageStamps: (stamps: StampElement[]) => void;
+  updateStampElement: (id: string, updates: Partial<StampElement>) => void;
+  deleteStampElement: (id: string) => void;
   setHashMode: (mode: boolean) => void;
   setHashLayerIndex: (index: number | null) => void;
   setHashDotIndex: (index: number | null) => void;

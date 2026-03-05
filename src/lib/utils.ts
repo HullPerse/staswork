@@ -232,12 +232,13 @@ export async function createImageData(file: File): Promise<ImageData> {
   return {
     id: crypto.randomUUID(),
     file,
-    BlobUrl: dataUrl,
+    blobUrl: dataUrl,
     dimensions,
     editHistory: [],
     name: file.name,
     currentTexts: [],
     currentStandaloneDots: [],
+    currentStamps: [],
   };
 }
 
@@ -253,7 +254,7 @@ export async function createImageDataWithMetadata(processedFile: {
   return {
     id: crypto.randomUUID(),
     file: processedFile.file,
-    BlobUrl: dataUrl,
+    blobUrl: dataUrl,
     dimensions: processedFile.dimensions,
     editHistory: [],
     name: processedFile.sourceFile
@@ -261,6 +262,7 @@ export async function createImageDataWithMetadata(processedFile: {
       : processedFile.file.name,
     currentTexts: [],
     currentStandaloneDots: [],
+    currentStamps: [],
     sourceFile: processedFile.sourceFile,
     pageNumber: processedFile.pageNumber,
   };

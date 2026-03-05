@@ -8,6 +8,7 @@ import {
   ImageMinus,
   ImagePlus,
   LassoSelect,
+  Stamp,
   Type,
 } from "lucide-react";
 import {
@@ -56,8 +57,13 @@ function App() {
     setArea,
     updateActiveImageTexts,
     updateActiveImageDots,
+    updateActiveImageStamps,
     hashMode,
     setHashMode,
+    stampMode,
+    setStampMode,
+    stamps,
+    setStamps,
     hashStandaloneDotsEnabled,
     hashStandaloneDotsSettings,
   } = useCanvasState();
@@ -94,6 +100,12 @@ function App() {
 
     updateActiveImageDots(standaloneDots);
   }, [standaloneDots, updateActiveImageDots, activeImageId]);
+
+  useEffect(() => {
+    if (isInitializingRef.current || !activeImageId) return;
+
+    updateActiveImageStamps(stamps);
+  }, [stamps, updateActiveImageStamps, activeImageId]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -261,6 +273,7 @@ function App() {
           image,
           image.currentTexts,
           image.currentStandaloneDots,
+          image.currentStamps,
           hashStandaloneDotsEnabled,
           hashStandaloneDotsSettings,
         );
@@ -310,6 +323,7 @@ function App() {
           image,
           image.currentTexts,
           image.currentStandaloneDots,
+          image.currentStamps,
           hashStandaloneDotsEnabled,
           hashStandaloneDotsSettings,
         );
@@ -388,6 +402,7 @@ function App() {
                 setActiveImageId(null);
                 clearDots();
                 clearTexts();
+                setStamps([]);
               }}
             >
               <ImageMinus className="size-10" />
@@ -405,6 +420,7 @@ function App() {
               setDotMode(false);
               setHashMode(false);
               setArea(false);
+              setStampMode(false);
             }}
           >
             <LassoSelect className="size-10" />
@@ -417,6 +433,7 @@ function App() {
               setDotMode(false);
               setHashMode(false);
               setArea(false);
+              setStampMode(false);
             }}
           >
             <Type className="size-10" />
@@ -429,6 +446,7 @@ function App() {
               setHashMode(false);
               setTextMode(false);
               setArea(false);
+              setStampMode(false);
             }}
           >
             <Dot className="size-10" />
@@ -441,9 +459,24 @@ function App() {
               setDotMode(false);
               setTextMode(false);
               setArea(false);
+              setStampMode(false);
             }}
           >
             <Hash className="size-10" />
+          </Button>
+
+          <Button
+            className="w-16 h-16 bg-green-500/20 border-green-500 hover:bg-green-500/60"
+            disabled={!image || stampMode}
+            onClick={() => {
+              setStampMode(true);
+              setHashMode(false);
+              setDotMode(false);
+              setTextMode(false);
+              setArea(false);
+            }}
+          >
+            <Stamp className="size-10" />
           </Button>
         </div>
         <div className="flex flex-row gap-2">

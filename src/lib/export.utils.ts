@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { ImageData, TextElement, DotElement } from "@/types";
+import { ImageData, TextElement, DotElement, StampElement } from "@/types";
 
 export interface ProcessedImage {
   name: string;
@@ -25,7 +25,6 @@ export function getVisibleStandaloneDotsForImage(imageData: ImageData) {
     .flatMap((historyItem) => historyItem.standaloneDots || []);
 }
 
-// Shared hash position calculation function
 const getHashPosition = (
   cx: number,
   cy: number,
@@ -71,10 +70,20 @@ const getHashPosition = (
   }
 };
 
+const loadImage = (src: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+};
+
 export async function processImageWithDots(
   imageData: ImageData,
-  currentTexts?: TextElement[], // Texts from useTextState()
+  currentTexts?: TextElement[],
   currentStandaloneDots?: DotElement[],
+  currentStamps?: StampElement[],
   hashStandaloneDotsEnabled?: boolean,
   hashStandaloneDotsSettings?: {
     hashFontSize: number;
@@ -91,186 +100,185 @@ export async function processImageWithDots(
       | "left";
   },
 ): Promise<ProcessedImage> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
+  const img = await loadImage(imageData.blobUrl);
 
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = imageData.dimensions.width;
-        canvas.height = imageData.dimensions.height;
+  const canvas = document.createElement("canvas");
+  canvas.width = imageData.dimensions.width;
+  canvas.height = imageData.dimensions.height;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Ошибка при получении контекста"));
-          return;
-        }
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Ошибка при получении контекста");
+  }
 
-        ctx.drawImage(img, 0, 0);
+  ctx.drawImage(img, 0, 0);
 
-        // 1. Process history items (dots, texts, standalone dots from history)
-        imageData.editHistory.forEach((historyItem) => {
-          if (!historyItem.visible) return;
+  imageData.editHistory.forEach((historyItem) => {
+    if (!historyItem.visible) return;
 
-          const dotRadius = historyItem.size / 2;
-          const hashEnabled = historyItem.settings.hashEnabled;
-          const hashFontSize = historyItem.settings.hashFontSize || 12;
-          const hashOffset = historyItem.settings.hashOffset || 5;
-          const hashColor = historyItem.settings.hashColor || "black";
-          const hashPosition = historyItem.settings.hashPosition || "top";
+    const dotRadius = historyItem.size / 2;
+    const hashEnabled = historyItem.settings.hashEnabled;
+    const hashFontSize = historyItem.settings.hashFontSize || 12;
+    const hashOffset = historyItem.settings.hashOffset || 5;
+    const hashColor = historyItem.settings.hashColor || "black";
+    const hashPosition = historyItem.settings.hashPosition || "top";
 
-          // Draw dots from history
-          historyItem.dots.forEach((dot, dotIndex) => {
-            ctx.beginPath();
-            ctx.arc(dot.cx, dot.cy, dotRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = "black";
-            ctx.fill();
+    historyItem.dots.forEach((dot, dotIndex) => {
+      ctx.beginPath();
+      ctx.arc(dot.cx, dot.cy, dotRadius, 0, 2 * Math.PI);
+      ctx.fillStyle = "black";
+      ctx.fill();
 
-            if (hashEnabled) {
-              const fontSize = dot.hashFontSize ?? hashFontSize;
-              const offset = dot.hashOffset ?? hashOffset;
-              const color = dot.hashColor ?? hashColor;
-              const position = dot.hashPosition ?? hashPosition;
+      if (hashEnabled) {
+        const fontSize = dot.hashFontSize ?? hashFontSize;
+        const offset = dot.hashOffset ?? hashOffset;
+        const color = dot.hashColor ?? hashColor;
+        const position = dot.hashPosition ?? hashPosition;
 
-              const pos = getHashPosition(
-                dot.cx,
-                dot.cy,
-                dotRadius,
-                position,
-                offset,
-              );
-              ctx.font = `bold ${fontSize}px sans-serif`;
-              ctx.fillStyle = color;
-              ctx.textAlign = pos.align;
-              ctx.textBaseline = "alphabetic";
-              ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
-            }
-          });
-
-          // Draw texts from history items
-          (historyItem.texts || []).forEach((textElement) => {
-            if (textElement.visible === false) return;
-            ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
-            ctx.fillStyle = textElement.color;
-            ctx.textAlign = "left";
-            ctx.textBaseline = "top";
-            ctx.fillText(textElement.text, textElement.x, textElement.y);
-          });
-
-          // Draw standalone dots from history
-          (historyItem.standaloneDots || []).forEach((dot, dotIndex) => {
-            if (dot.visible === false) return;
-            const radius = dot.size / 2;
-            ctx.beginPath();
-            ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = dot.color;
-            ctx.fill();
-
-            if (hashEnabled) {
-              const fontSize = dot.hashFontSize ?? hashFontSize;
-              const offset = dot.hashOffset ?? hashOffset;
-              const color = dot.hashColor ?? hashColor;
-              const position = dot.hashPosition ?? hashPosition;
-
-              const pos = getHashPosition(
-                dot.x,
-                dot.y,
-                radius,
-                position,
-                offset,
-              );
-              ctx.font = `bold ${fontSize}px sans-serif`;
-              ctx.fillStyle = color;
-              ctx.textAlign = pos.align;
-              ctx.textBaseline = "alphabetic";
-              ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
-            }
-          });
-        });
-
-        // 2. Draw CURRENT texts from useTextState()
-        (currentTexts || []).forEach((textElement) => {
-          if (textElement.visible === false) return;
-          ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
-          ctx.fillStyle = textElement.color;
-          ctx.textAlign = "left";
-          ctx.textBaseline = "top";
-          ctx.fillText(textElement.text, textElement.x, textElement.y);
-        });
-
-        // 3. Draw CURRENT standalone dots from useDotState()
-        const standaloneDots = currentStandaloneDots || [];
-        const standaloneHashFontSize =
-          hashStandaloneDotsSettings?.hashFontSize ?? 12;
-        const standaloneHashOffset =
-          hashStandaloneDotsSettings?.hashOffset ?? 5;
-        const standaloneHashColor =
-          hashStandaloneDotsSettings?.hashColor ?? "black";
-        const standaloneHashPosition =
-          hashStandaloneDotsSettings?.hashPosition ?? "top";
-
-        standaloneDots.forEach((dot, dotIndex) => {
-          if (dot.visible === false) return;
-          const radius = dot.size / 2;
-          ctx.beginPath();
-          ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
-          ctx.fillStyle = dot.color;
-          ctx.fill();
-
-          if (hashStandaloneDotsEnabled) {
-            const fontSize = dot.hashFontSize ?? standaloneHashFontSize;
-            const offset = dot.hashOffset ?? standaloneHashOffset;
-            const color = dot.hashColor ?? standaloneHashColor;
-            const position = dot.hashPosition ?? standaloneHashPosition;
-
-            const pos = getHashPosition(dot.x, dot.y, radius, position, offset);
-            ctx.font = `bold ${fontSize}px sans-serif`;
-            ctx.fillStyle = color;
-            ctx.textAlign = pos.align;
-            ctx.textBaseline = "alphabetic";
-            ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
-          }
-        });
-
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error("Ошибка при создания blob"));
-              return;
-            }
-
-            // FIXED: Proper file naming - use first visible text, fallback to image name
-            const allTexts = currentTexts || [];
-            const firstVisibleText = allTexts.find((t) => t.visible !== false);
-
-            let name: string;
-            if (firstVisibleText) {
-              // Use first visible text for filename
-              const sanitizedText = firstVisibleText.text
-                .replace(/[^a-zA-Zа-яА-Я0-9\s]/g, "_")
-                .trim()
-                .replace(/\s+/g, "_")
-                .slice(0, 50);
-              name = sanitizedText + ".png";
-            } else {
-              // Fallback to original image name without extension
-              name = imageData.name.replace(/\.[^/.]+$/, "") + ".png";
-            }
-
-            resolve({ name, blob, dimensions: imageData.dimensions });
-          },
-          "image/png",
-          1.0,
+        const pos = getHashPosition(
+          dot.cx,
+          dot.cy,
+          dotRadius,
+          position,
+          offset,
         );
-      } catch (error) {
-        reject(error);
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        ctx.fillStyle = color;
+        ctx.textAlign = pos.align;
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
       }
-    };
+    });
 
-    img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = imageData.BlobUrl;
+    (historyItem.texts || []).forEach((textElement) => {
+      if (textElement.visible === false) return;
+      ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
+      ctx.fillStyle = textElement.color;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText(textElement.text, textElement.x, textElement.y);
+    });
+
+    (historyItem.standaloneDots || []).forEach((dot, dotIndex) => {
+      if (dot.visible === false) return;
+      const radius = dot.size / 2;
+      ctx.beginPath();
+      ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = dot.color;
+      ctx.fill();
+
+      if (hashEnabled) {
+        const fontSize = dot.hashFontSize ?? hashFontSize;
+        const offset = dot.hashOffset ?? hashOffset;
+        const color = dot.hashColor ?? hashColor;
+        const position = dot.hashPosition ?? hashPosition;
+
+        const pos = getHashPosition(dot.x, dot.y, radius, position, offset);
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        ctx.fillStyle = color;
+        ctx.textAlign = pos.align;
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
+      }
+    });
   });
+
+  (currentTexts || []).forEach((textElement) => {
+    if (textElement.visible === false) return;
+    ctx.font = `${textElement.fontSize}px ${textElement.fontFamily}`;
+    ctx.fillStyle = textElement.color;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(textElement.text, textElement.x, textElement.y);
+  });
+
+  const standaloneDots = currentStandaloneDots || [];
+  const standaloneHashFontSize = hashStandaloneDotsSettings?.hashFontSize ?? 12;
+  const standaloneHashOffset = hashStandaloneDotsSettings?.hashOffset ?? 5;
+  const standaloneHashColor = hashStandaloneDotsSettings?.hashColor ?? "black";
+  const standaloneHashPosition =
+    hashStandaloneDotsSettings?.hashPosition ?? "top";
+
+  standaloneDots.forEach((dot, dotIndex) => {
+    if (dot.visible === false) return;
+    const radius = dot.size / 2;
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = dot.color;
+    ctx.fill();
+
+    if (hashStandaloneDotsEnabled) {
+      const fontSize = dot.hashFontSize ?? standaloneHashFontSize;
+      const offset = dot.hashOffset ?? standaloneHashOffset;
+      const color = dot.hashColor ?? standaloneHashColor;
+      const position = dot.hashPosition ?? standaloneHashPosition;
+
+      const pos = getHashPosition(dot.x, dot.y, radius, position, offset);
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.fillStyle = color;
+      ctx.textAlign = pos.align;
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(String(dotIndex + 1), pos.x, pos.y);
+    }
+  });
+
+  const stamps = currentStamps || [];
+  for (const stamp of stamps) {
+    if (stamp.visible === false) continue;
+    try {
+      const stampImg = await loadImage(stamp.path);
+
+      const imgAspect = stampImg.width / stampImg.height;
+      const targetAspect = stamp.width / stamp.height;
+
+      let drawWidth = stamp.width;
+      let drawHeight = stamp.height;
+
+      if (imgAspect > targetAspect) {
+        drawHeight = stamp.width / imgAspect;
+      } else {
+        drawWidth = stamp.height * imgAspect;
+      }
+
+      ctx.drawImage(
+        stampImg,
+        stamp.x - drawWidth / 2,
+        stamp.y - drawHeight / 2,
+        drawWidth,
+        drawHeight,
+      );
+    } catch (e) {
+      console.warn("Failed to load stamp:", stamp.path);
+    }
+  }
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => {
+        if (!b) reject(new Error("Ошибка при создания blob"));
+        else resolve(b);
+      },
+      "image/png",
+      1.0,
+    );
+  });
+
+  const allTexts = currentTexts || [];
+  const firstVisibleText = allTexts.find((t) => t.visible !== false);
+
+  let name: string;
+  if (firstVisibleText) {
+    const sanitizedText = firstVisibleText.text
+      .replace(/[^a-zA-Zа-яА-Я0-9\s]/g, "_")
+      .trim()
+      .replace(/\s+/g, "_")
+      .slice(0, 50);
+    name = sanitizedText + ".png";
+  } else {
+    name = imageData.name.replace(/\.[^/.]+$/, "") + ".png";
+  }
+
+  return { name, blob, dimensions: imageData.dimensions };
 }
 
 export async function createImageArchive(

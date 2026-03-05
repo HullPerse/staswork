@@ -153,7 +153,7 @@ export default function TextSettings() {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-2 h-full ">
+    <div className="flex flex-col gap-3 p-2 h-full">
       <div className="flex flex-col gap-2">
         <span className="text-sm">Текст:</span>
         <Input

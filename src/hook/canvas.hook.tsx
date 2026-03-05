@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { TextElement, DotElement } from "@/types";
+import { TextElement, DotElement, StampElement } from "@/types";
 import type { MouseEvent } from "react";
 
 interface UseElementDragParams {
@@ -144,4 +144,71 @@ export function useDotDrag(
 export function useDotsCalculation() {
   const resultsRef = useRef<{ cx: number; cy: number }[]>([]);
   return resultsRef;
+}
+
+export function useStampDrag(
+  { updateElement, setSelectedId }: UseElementDragParams,
+  stamps: StampElement[],
+) {
+  const handleStampMouseDown = useCallback(
+    (e: MouseEvent, stampId: string) => {
+      e.stopPropagation();
+      setSelectedId(stampId);
+
+      const svg = (e.currentTarget as HTMLElement)?.closest("svg");
+      if (!svg) return;
+
+      const rect = svg.getBoundingClientRect();
+      const viewBox = svg.viewBox.baseVal;
+
+      const stampElement = stamps.find((s) => s.id === stampId);
+      if (!stampElement) return;
+
+      const initialClientX = e.clientX;
+      const initialClientY = e.clientY;
+      const initialStampX = stampElement.x;
+      const initialStampY = stampElement.y;
+
+      let animationFrameId: number | null = null;
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+
+        animationFrameId = requestAnimationFrame(() => {
+          const deltaX = moveEvent.clientX - initialClientX;
+          const deltaY = moveEvent.clientY - initialClientY;
+
+          const svgDeltaX = (deltaX / rect.width) * viewBox.width;
+          const svgDeltaY = (deltaY / rect.height) * viewBox.height;
+
+          const newX = initialStampX + svgDeltaX;
+          const newY = initialStampY + svgDeltaY;
+
+          updateElement(stampId, { x: newX, y: newY });
+        });
+      };
+
+      const handleMouseUp = () => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+
+        document.removeEventListener("mousemove", handleMouseMove as any);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+
+      document.addEventListener("mousemove", handleMouseMove as any);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [setSelectedId, updateElement, stamps],
+  );
+
+  return handleStampMouseDown;
 }
