@@ -154,10 +154,10 @@ function App() {
 
       setLoading(true);
       try {
-        const sdotFiles = files.filter((file) => file.name.endsWith(".sdot"));
+        const sdotFiles = files.filter((file) => file.name.endsWith(".sts"));
         const imageFiles = files.filter(
           (file) =>
-            file.type.startsWith("image/") && !file.name.endsWith(".sdot"),
+            file.type.startsWith("image/") && !file.name.endsWith(".sts"),
         );
         const pdfFiles = files.filter((file) => isPDFFile(file));
 
@@ -213,7 +213,7 @@ function App() {
     accept: {
       "image/*": [".jpeg", ".jpg", ".png", ".webp"],
       "application/pdf": [".pdf"],
-      "application/json": [".sdot"],
+      "application/json": [".sts"],
     },
     multiple: true,
     noClick: false,
@@ -498,7 +498,7 @@ function App() {
         <div className="flex flex-row gap-2">
           <Button
             className="w-16 h-16"
-            title="Сохранить в .sdot"
+            title="Сохранить в .sts"
             onClick={() => {
               downloadSdot(
                 imageHistory,

@@ -407,9 +407,9 @@ export async function downloadSdot(
       .trim()
       .replace(/\s+/g, "_")
       .slice(0, 50);
-    name = sanitizedText + ".sdot";
+    name = sanitizedText + ".sts";
   } else {
-    name = "Результат.sdot";
+    name = "Результат.sts";
   }
 
   const project = await serializeProject(imageHistory);
@@ -449,7 +449,7 @@ export async function loadSdotProject(file: File): Promise<ImageData[]> {
   const project: SdotProject = JSON.parse(text);
 
   if (!project.images || !Array.isArray(project.images)) {
-    throw new Error("Invalid .sdot file format");
+    throw new Error("Invalid .sts file format");
   }
 
   const imageDataList: ImageData[] = [];
