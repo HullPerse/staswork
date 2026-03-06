@@ -7,8 +7,6 @@ export const stampConfig = [
   {
     label: "Илюха",
     path: "./src/assets/stamps/2.png",
-    width: 64,
-    height: 64,
   },
 ];
 
@@ -21,13 +19,19 @@ export default function StampSettings() {
     setSelectedStampIndex,
     updateStampElement,
     deleteStampElement,
+    imageHistory,
+    activeImageId,
   } = useCanvasState();
+
+  // Get active image dimensions
+  const activeImage = imageHistory.find((i) => i.id === activeImageId);
+  const imageWidth = activeImage?.dimensions.width || 1000; // fallback width
+  const imageHeight = activeImage?.dimensions.height || 1000; // fallback height
+  const defaultStampSize = Math.min(imageWidth, imageHeight) * 0.2; // 2.5% of smaller dimension
 
   const selectedLayer = stamps.find((l) => l.id === selectedStampId);
 
-  const [localStampSize, setLocalStampSize] = useState(
-    selectedLayer?.width || 64,
-  );
+  const [localStampSize, setLocalStampSize] = useState(defaultStampSize);
 
   const throttleRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -35,9 +39,9 @@ export default function StampSettings() {
     if (selectedLayer) {
       setLocalStampSize(selectedLayer.width);
     } else {
-      setLocalStampSize(64);
+      setLocalStampSize(defaultStampSize);
     }
-  }, [selectedLayer?.id]);
+  }, [selectedLayer?.id, defaultStampSize]);
 
   const throttledUpdate = useCallback(
     (updates: Record<string, unknown>) => {
