@@ -391,14 +391,34 @@ export async function serializeProject(
   };
 }
 
-export async function downloadSdot(imageHistory: ImageData[]) {
+export async function downloadSdot(
+  imageHistory: ImageData[],
+  currentTexts: TextElement[],
+) {
+  const allTexts = currentTexts || [];
+
+  const firstVisibleText = allTexts.find((t) => t.visible !== false);
+
+  let name: string;
+
+  if (firstVisibleText) {
+    const sanitizedText = firstVisibleText.text
+      .replace(/[^a-zA-Zа-яА-Я0-9\s]/g, "_")
+      .trim()
+      .replace(/\s+/g, "_")
+      .slice(0, 50);
+    name = sanitizedText + ".sdot";
+  } else {
+    name = "Результат.sdot";
+  }
+
   const project = await serializeProject(imageHistory);
   const json = JSON.stringify(project);
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "project.sdot";
+  a.download = name;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

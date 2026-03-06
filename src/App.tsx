@@ -499,7 +499,12 @@ function App() {
           <Button
             className="w-16 h-16"
             title="Сохранить в .sdot"
-            onClick={() => downloadSdot(imageHistory)}
+            onClick={() => {
+              downloadSdot(
+                imageHistory,
+                imageHistory.flatMap((img) => img.currentTexts),
+              );
+            }}
             disabled={imageHistory.length === 0}
           >
             <SquareLibrary className="size-10" />
