@@ -1,5 +1,5 @@
 import { PointsHistory } from "@/types";
-import { HistoryDot, DotRenderer } from "./dot.renderer";
+import { HistoryDots, DotRenderer } from "./dot.renderer";
 import { HistoryText } from "./text.renderer";
 import { useCanvasState } from "@/context/canvas.context";
 
@@ -52,8 +52,8 @@ export function HistoryRenderer({
           historyIndex !== editIndex && (
             <g key={`history-${historyIndex}`}>
               {item.visible && (
-                <HistoryDot
-                  dots={item.dots}
+                <HistoryDots
+                  dots={item.dots || []}
                   size={item.size}
                   hashEnabled={item.settings.hashEnabled}
                   hashFontSize={item.settings.hashFontSize}
@@ -75,7 +75,6 @@ export function HistoryRenderer({
               )}
               {showTexts && <HistoryText texts={item.texts || []} />}
               <DotRenderer
-                dots={item.standaloneDots || []}
                 isInteractive={false}
                 hashEnabled={hashStandaloneDotsEnabled}
                 hashFontSize={item.settings.hashFontSize}

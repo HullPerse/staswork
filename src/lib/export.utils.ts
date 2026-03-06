@@ -1,5 +1,6 @@
 import JSZip from "jszip";
 import { ImageData, TextElement, DotElement, StampElement } from "@/types";
+import { fileToDataUrl } from "@/lib/utils";
 
 export interface ProcessedImage {
   name: string;
@@ -248,6 +249,7 @@ export async function processImageWithDots(
         drawHeight,
       );
     } catch (e) {
+      console.error(e);
       console.warn("Failed to load stamp:", stamp.path);
     }
   }
@@ -333,4 +335,121 @@ export async function downloadArchive(
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+export interface SdotImage {
+  id: string;
+  name: string;
+  imageData: string;
+  dimensions: { width: number; height: number };
+  editHistory: ImageData["editHistory"];
+  currentTexts: ImageData["currentTexts"];
+  currentStandaloneDots: ImageData["currentStandaloneDots"];
+  currentStamps: ImageData["currentStamps"];
+}
+
+export interface SdotProject {
+  version: string;
+  images: SdotImage[];
+}
+
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function serializeProject(
+  imageHistory: ImageData[],
+): Promise<SdotProject> {
+  const images: SdotImage[] = [];
+
+  for (const img of imageHistory) {
+    const imageData = await fileToBase64(img.file);
+    images.push({
+      id: img.id,
+      name: img.name,
+      imageData,
+      dimensions: img.dimensions,
+      editHistory: img.editHistory,
+      currentTexts: img.currentTexts,
+      currentStandaloneDots: img.currentStandaloneDots,
+      currentStamps: img.currentStamps,
+    });
+  }
+
+  return {
+    version: "1.0",
+    images,
+  };
+}
+
+export async function downloadSdot(imageHistory: ImageData[]) {
+  const project = await serializeProject(imageHistory);
+  const json = JSON.stringify(project);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "project.sdot";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function base64ToBlob(base64: string, mimeType: string = "image/png"): Blob {
+  const byteCharacters = atob(base64);
+  const byteNumbers = Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
+}
+
+function base64ToFile(
+  base64: string,
+  filename: string,
+  mimeType: string = "image/png",
+): File {
+  const blob = base64ToBlob(base64, mimeType);
+  return new File([blob], filename, { type: mimeType });
+}
+
+export async function loadSdotProject(file: File): Promise<ImageData[]> {
+  const text = await file.text();
+  const project: SdotProject = JSON.parse(text);
+
+  if (!project.images || !Array.isArray(project.images)) {
+    throw new Error("Invalid .sdot file format");
+  }
+
+  const imageDataList: ImageData[] = [];
+
+  for (const img of project.images) {
+    const file = base64ToFile(img.imageData, img.name);
+    const blobUrl = await fileToDataUrl(file);
+
+    imageDataList.push({
+      id: img.id,
+      file,
+      blobUrl,
+      dimensions: img.dimensions,
+      editHistory: img.editHistory || [],
+      name: img.name,
+      currentTexts: img.currentTexts || [],
+      currentStandaloneDots: img.currentStandaloneDots || [],
+      currentStamps: img.currentStamps || [],
+    });
+  }
+
+  return imageDataList;
 }

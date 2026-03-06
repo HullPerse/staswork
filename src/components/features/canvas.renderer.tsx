@@ -21,14 +21,14 @@ import { useDotDrag, useTextDrag, useStampDrag } from "@/hook/canvas.hook";
 import { stampConfig } from "./stamp.settings";
 
 export default function ModeRenderer({
+  dots,
   imgSrc,
   dimensions,
-  dots,
   history,
 }: {
+  dots: { cx: number; cy: number }[];
   imgSrc: string;
   dimensions: { width: number; height: number };
-  dots: { cx: number; cy: number }[];
   history: PointsHistory[];
 }) {
   const {
@@ -243,14 +243,13 @@ export default function ModeRenderer({
       )}
 
       {/* Current texts and standalone dots overlay */}
-      {(texts.length > 0 || standaloneDots.length > 0) && (
+      {!stampMode && (texts.length > 0 || standaloneDots.length > 0) && (
         <SvgOverlay
           dimensions={dimensions}
           className={`absolute inset-0 ${textMode ? "cursor-crosshair" : "pointer-events-none"}`}
           onClick={textMode ? handleCanvasClick : undefined}
         >
           <DotRenderer
-            dots={standaloneDots}
             isInteractive={dotMode}
             selectedDotId={selectedDotId}
             onDotMouseDown={handleDotMouseDown}
@@ -268,6 +267,20 @@ export default function ModeRenderer({
             onTextMouseDown={handleTextMouseDown}
             onTextClick={handleTextClick}
           />
+          <StampRenderer
+            stamps={stamps}
+            isInteractive={true}
+            selectedStampId={selectedStampId}
+            onStampMouseDown={handleStampMouseDown}
+          />
+        </SvgOverlay>
+      )}
+      {/* Stamps overlay - show only when not in text/dot/hash modes */}
+      {stampMode && stamps.length > 0 && (
+        <SvgOverlay
+          dimensions={dimensions}
+          className="absolute inset-0 pointer-events-none"
+        >
           <StampRenderer
             stamps={stamps}
             isInteractive={true}
@@ -294,7 +307,6 @@ export default function ModeRenderer({
       >
         <HistoryRenderer history={history} editIndex={editIndex} />
         <DotRenderer
-          dots={standaloneDots}
           isInteractive={true}
           selectedDotId={selectedDotId}
           onDotMouseDown={handleDotMouseDown}
@@ -306,13 +318,14 @@ export default function ModeRenderer({
           hashPosition={hashStandaloneDotsSettings.hashPosition}
         />
         <TextRenderer texts={texts} isInteractive={false} />
+        <GeneratedDot dots={dots} size={size} />
+
         <StampRenderer
           stamps={stamps}
           isInteractive={true}
           selectedStampId={selectedStampId}
           onStampMouseDown={handleStampMouseDown}
         />
-        <GeneratedDot dots={dots} size={size} />
       </SvgOverlay>
     </div>
   );
@@ -343,7 +356,6 @@ export default function ModeRenderer({
           onTextClick={handleTextClick}
         />
         <DotRenderer
-          dots={standaloneDots}
           isInteractive={false}
           hashEnabled={hashStandaloneDotsEnabled}
           hashFontSize={hashStandaloneDotsSettings.hashFontSize}
@@ -352,6 +364,7 @@ export default function ModeRenderer({
           hashPosition={hashStandaloneDotsSettings.hashPosition}
         />
         <GeneratedDot dots={dots} size={size} />
+
         <StampRenderer
           stamps={stamps}
           isInteractive={true}
@@ -378,7 +391,6 @@ export default function ModeRenderer({
         <SelectionPolygon points={points} />
         <HistoryRenderer history={history} editIndex={editIndex} />
         <DotRenderer
-          dots={standaloneDots}
           isInteractive={false}
           hashEnabled={hashStandaloneDotsEnabled}
           hashFontSize={hashStandaloneDotsSettings.hashFontSize}
@@ -394,6 +406,7 @@ export default function ModeRenderer({
           onTextClick={handleTextClick}
         />
         <GeneratedDot dots={dots} size={size} />
+
         <StampRenderer
           stamps={stamps}
           isInteractive={true}

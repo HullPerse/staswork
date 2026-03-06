@@ -150,7 +150,9 @@ export interface CanvasState {
 }
 
 export interface CanvasStateActions {
-  setImageHistory: (history: ImageData[]) => void;
+  setImageHistory: (
+    history: ImageData[] | ((prev: ImageData[]) => ImageData[]),
+  ) => void;
   setActiveImageId: (id: string | null) => void;
   setArea: (area: boolean) => void;
   setPoints: (points: Points[]) => void;

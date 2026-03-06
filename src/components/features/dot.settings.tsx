@@ -5,7 +5,7 @@ import { Trash2, Move, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function DotSettings() {
-  const { imageHistory, activeImageId } = useCanvasState();
+  const { updateActiveImageDots } = useCanvasState();
 
   const {
     dotSettings,
@@ -17,22 +17,7 @@ export default function DotSettings() {
     deleteDotElement,
   } = useDotState();
 
-  const activeImage = imageHistory.find((img) => img.id === activeImageId);
-  const history = activeImage?.editHistory || [];
-
-  const allDots = [
-    ...standaloneDots,
-    ...history
-      .filter((item) => item.visible)
-      .flatMap((item) =>
-        (item.standaloneDots || []).map((dot) => ({
-          ...dot,
-          visible: dot.visible !== undefined ? dot.visible : true,
-        })),
-      ),
-  ];
-
-  const selectedLayer = allDots.find((l) => l.id === selectedDotId);
+  const selectedLayer = standaloneDots.find((l) => l.id === selectedDotId);
 
   const [localDotSize, setLocalDotSize] = useState(
     selectedLayer?.size || dotSettings.size,
@@ -81,27 +66,46 @@ export default function DotSettings() {
 
   const toggleDotVisibility = useCallback(
     (dotId: string) => {
-      const dotElement = allDots.find((d) => d.id === dotId);
+      const dotElement = standaloneDots.find((d) => d.id === dotId);
       if (dotElement) {
+        const updatedDots = standaloneDots.map((d) =>
+          d.id === dotId ? { ...d, visible: !d.visible } : d,
+        );
         updateDotElement(dotId, { visible: !dotElement.visible });
+        updateActiveImageDots(updatedDots);
       }
     },
-    [allDots, updateDotElement],
+    [standaloneDots, updateDotElement, updateActiveImageDots],
   );
 
   const deleteDotLayer = useCallback(
     (dotId: string) => {
+      const newDots = standaloneDots.filter((d) => d.id !== dotId);
+      updateActiveImageDots(newDots);
       deleteDotElement(dotId);
       if (selectedDotId === dotId) {
         setSelectedDotId(null);
       }
     },
-    [deleteDotElement, selectedDotId, setSelectedDotId],
+    [
+      standaloneDots,
+      updateActiveImageDots,
+      deleteDotElement,
+      selectedDotId,
+      setSelectedDotId,
+    ],
   );
+
+  const handleLayerClick = (layerId: string) => {
+    if (selectedDotId === layerId) {
+      setSelectedDotId(null);
+    } else {
+      setSelectedDotId(layerId);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3 p-2 h-full">
-      {/* Dot size */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-row w-full items-center justify-between">
           <span className="text-sm">Размер точки:</span>
@@ -116,13 +120,12 @@ export default function DotSettings() {
         />
       </div>
 
-      {/* Dot layers list */}
       <div className="flex flex-col h-full overflow-y-auto pb-10">
-        {allDots.length > 0 && (
+        {standaloneDots.length > 0 && (
           <div className="flex flex-col gap-2 mt-4">
             <span className="font-medium">Слои:</span>
             <div className="flex flex-col gap-1">
-              {allDots.map((layer, index) => (
+              {standaloneDots.map((layer, index) => (
                 <div
                   key={layer.id}
                   className={`flex flex-row items-center justify-between p-2 rounded border cursor-pointer transition-colors ${
@@ -130,11 +133,7 @@ export default function DotSettings() {
                       ? "border-primary border-dashed bg-primary/10"
                       : "border-white/10 hover:border-white/30"
                   }`}
-                  onClick={() => {
-                    if (selectedDotId === layer.id)
-                      return setSelectedDotId(null);
-                    setSelectedDotId(layer.id);
-                  }}
+                  onClick={() => handleLayerClick(layer.id)}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Move className="size-3 text-white/50 shrink-0" />

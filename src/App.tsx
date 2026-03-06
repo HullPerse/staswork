@@ -8,6 +8,7 @@ import {
   ImageMinus,
   ImagePlus,
   LassoSelect,
+  SquareLibrary,
   Stamp,
   Type,
 } from "lucide-react";
@@ -32,6 +33,8 @@ import { useUndoState } from "./context/undo.context";
 import {
   createImageArchive,
   downloadArchive,
+  downloadSdot,
+  loadSdotProject,
   processImageWithDots,
   type ProcessedImage,
 } from "./lib/export.utils";
@@ -83,11 +86,12 @@ function App() {
     isInitializingRef.current = true;
     setTexts(activeImage.currentTexts || []);
     setStandaloneDots(activeImage.currentStandaloneDots || []);
+    setStamps(activeImage.currentStamps || []);
 
     setTimeout(() => {
       isInitializingRef.current = false;
     }, 100);
-  }, [activeImageId, imageHistory, setTexts, setStandaloneDots]);
+  }, [activeImageId, imageHistory, setTexts, setStandaloneDots, setStamps]);
 
   useEffect(() => {
     if (isInitializingRef.current || !activeImageId) return;
@@ -150,12 +154,22 @@ function App() {
 
       setLoading(true);
       try {
-        const imageFiles = files.filter((file) =>
-          file.type.startsWith("image/"),
+        const sdotFiles = files.filter((file) => file.name.endsWith(".sdot"));
+        const imageFiles = files.filter(
+          (file) =>
+            file.type.startsWith("image/") && !file.name.endsWith(".sdot"),
         );
         const pdfFiles = files.filter((file) => isPDFFile(file));
 
-        if (imageFiles.length === 0 && pdfFiles.length === 0) return;
+        if (sdotFiles.length > 0) {
+          for (const sdotFile of sdotFiles) {
+            const loadedImages = await loadSdotProject(sdotFile);
+            setImageHistory((prev) => [...prev, ...loadedImages]);
+            if (!activeImageId && loadedImages.length > 0) {
+              setActiveImageId(loadedImages[0].id);
+            }
+          }
+        }
 
         if (imageFiles.length > 0) {
           await handleImagesUpload(imageFiles);
@@ -174,7 +188,7 @@ function App() {
         setLoading(false);
       }
     },
-    [handleImagesUpload],
+    [handleImagesUpload, setImageHistory, activeImageId, setActiveImageId],
   );
 
   const handlePDFPageSelection = useCallback(
@@ -199,6 +213,7 @@ function App() {
     accept: {
       "image/*": [".jpeg", ".jpg", ".png", ".webp"],
       "application/pdf": [".pdf"],
+      "application/json": [".sdot"],
     },
     multiple: true,
     noClick: false,
@@ -479,7 +494,16 @@ function App() {
             <Stamp className="size-10" />
           </Button>
         </div>
+
         <div className="flex flex-row gap-2">
+          <Button
+            className="w-16 h-16"
+            title="Сохранить в .sdot"
+            onClick={() => downloadSdot(imageHistory)}
+            disabled={imageHistory.length === 0}
+          >
+            <SquareLibrary className="size-10" />
+          </Button>
           <Button
             className="w-16 h-16"
             title="Сохранить в PDF"
