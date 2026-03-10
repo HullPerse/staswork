@@ -5,8 +5,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 export const stampConfig = [
   {
-    label: "Илюха",
-    path: "./src/assets/stamps/2.png",
+    label: "Печать #1",
+    path: "./src/assets/stamps/ПЕЧАТЬ-1.png",
+  },
+  {
+    label: "Печать #2",
+    path: "./src/assets/stamps/ПЕЧАТЬ-2.png",
   },
 ];
 
