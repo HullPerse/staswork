@@ -81,7 +81,7 @@ export default function CanvasSettings() {
           </div>
           <Slider
             min={1}
-            max={100}
+            max={200}
             step={1}
             value={size}
             onValueChange={(e) => setSize(e as number)}
@@ -101,7 +101,7 @@ export default function CanvasSettings() {
           </div>
           <Slider
             min={1}
-            max={200}
+            max={250}
             step={1}
             value={gap}
             onValueChange={(e) => setGap(e as number)}
@@ -121,7 +121,7 @@ export default function CanvasSettings() {
           </div>
           <Slider
             min={1}
-            max={200}
+            max={250}
             step={1}
             value={padding}
             onValueChange={(e) => setPadding(e as number)}
