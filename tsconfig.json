@@ -24,6 +24,6 @@
       "@/*": ["./src/*"],
     },
   },
-  "include": ["src"],
+  "include": ["src", "public/stamps"],
   "references": [{ "path": "./tsconfig.node.json" }],
 }

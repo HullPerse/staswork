@@ -5,12 +5,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 export const stampConfig = [
   {
-    label: "Печать #1",
-    path: "./src/assets/stamps/ПЕЧАТЬ-1.png",
+    label: "Старая",
+    path: "/Старая.png",
   },
   {
-    label: "Печать #2",
-    path: "./src/assets/stamps/ПЕЧАТЬ-2.png",
+    label: "Новая",
+    path: "/Новая.png",
   },
 ];
 
@@ -31,7 +31,7 @@ export default function StampSettings() {
   const activeImage = imageHistory.find((i) => i.id === activeImageId);
   const imageWidth = activeImage?.dimensions.width || 1000; // fallback width
   const imageHeight = activeImage?.dimensions.height || 1000; // fallback height
-  const defaultStampSize = Math.min(imageWidth, imageHeight) * 0.2; // 2.5% of smaller dimension
+  const defaultStampSize = Math.min(imageWidth, imageHeight) * 0.23; // 2.2% of smaller dimension
 
   const selectedLayer = stamps.find((l) => l.id === selectedStampId);
 
